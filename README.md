@@ -48,6 +48,18 @@
 
 -   快速开始调试（见build setup）
 
+## How to contribute 
+
+首先可以使用 `git branch -r` 查看远程分支：这里应该有yzq-dev/master/（zfh-dev 分支）
+
+使用 git checkout -b zfh-dev （创建个人dev分支）
+
+在个人能够使用npm run dev 跑通后可以`git checkout master` `git merge xxx-dev` 
+
+应该注意：在开发之前应使用 `git pull origin master:xxx-dev` 拉取最近branch进行开发。
+
+如果有提交错误，回退版本参考 https://blog.csdn.net/guozhaohui628/article/details/78922946。
+
 ## Build Setup
 
 ``` bash
