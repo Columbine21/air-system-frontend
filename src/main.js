@@ -6,7 +6,7 @@ import router from './router'
 
 import 'styles/reset.css'
 import 'styles/border.css'
-// import 'styles/iconfont.css' // Todo: 之后需要用到icon时添加
+import 'styles/iconfont.css'
 
 Vue.config.productionTip = false
 
