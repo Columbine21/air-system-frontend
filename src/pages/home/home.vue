@@ -1,10 +1,17 @@
 <template>
-  <div>hello world</div>
+  <div>
+    <header-demo></header-demo>
+    <div>hello world</div>
+  </div>
 </template>
 
 <script>
+import HeaderDemo from './components/headerdemo'
 export default {
-  name: 'Home'
+  name: 'Home',
+  components: {
+    HeaderDemo: HeaderDemo
+  }
 }
 </script>
 

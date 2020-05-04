@@ -1,10 +1,17 @@
 <template>
-  <div>admin</div>
+  <div>
+    <div>Admin Home</div>
+    <echartsDemo></echartsDemo>
+  </div>
 </template>
 
 <script>
+import EchartsDemo from './components/echartdemo'
 export default {
-  name: 'Admin'
+  name: 'Admin',
+  components: {
+    EchartsDemo: EchartsDemo
+  }
 }
 </script>
 
