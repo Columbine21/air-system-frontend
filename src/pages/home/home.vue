@@ -2,8 +2,13 @@
   <div>
     <img src="../../assets/bkPhoto.jpeg" class="bkPhoto" />
     <div class="login">
+      <div class="header-wrapper">
+        <img class="header-img" src='../../assets/logo.png' />
+      </div>
       <el-form ref="loginForm" :model="form" :rules="rules" class="login-box">
-        <h3 class="login-title">logo</h3>
+        <div class="image-wrapper">
+          <img class="login-avater" src="../../assets/avater.jpeg" />
+        </div>
         <div class="field-box">
           <!-- <el-form-item label="账号" prop="username" class="account"> -->
           <div class="account">
@@ -15,7 +20,10 @@
             <el-input type="password" class='field' placeholder="请输入密码" v-model="form.password" />
           </div>
           <div class="checkBox">
-          <el-checkbox v-model="isadmin">Admin</el-checkbox>
+            <el-checkbox v-model="isadmin">Admin</el-checkbox>
+          </div>
+          <div class="validity-check-info" v-show="!validity">
+              {{this.message}}
           </div>
           <div class="button-box">
             <el-button class="loginButton" type="primary" v-on:click="onSubmit('loginForm')">登录</el-button>
@@ -24,26 +32,27 @@
         </div>
       </el-form>
 
-      <el-dialog title="温馨提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+      <!-- <el-dialog title="温馨提示" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
         <span>请输入账号和密码</span>
         <span slot="footer" class="dialog-footer">
           <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
         </span>
-      </el-dialog>
+      </el-dialog> -->
     </div>
   </div>
 </template>
 <script>
-import HeaderDemo from './components/headerdemo'
 export default {
   name: 'Login',
-  data() {
+  data () {
     return {
+      validity: true,
+      message: '',
       form: {
         username: '',
         password: ''
       },
-      isAdmin: false,
+      isadmin: false,
       // 表单验证，需要在 el-form-item 元素中增加 prop 属性
       rules: {
         username: [
@@ -51,37 +60,79 @@ export default {
         ],
         password: [{ required: true, message: '密码不可为空', trigger: 'blur' }]
       },
-
       // 对话框显示和隐藏
       dialogVisible: false
     }
   },
-  components: {
-    HeaderDemo: HeaderDemo
+  methods: {
+    onSubmit (type) {
+      if (type === 'loginForm') {
+        if (this.form.password && this.form.username) {
+          // Todo : change it into axios post request
+          console.log('login \n' + this.form.username + '\n' + this.form.password)
+        } else {
+          this.validity = false
+          this.message = 'User Name or Password can not be null'
+        }
+      } else {
+        if (this.onValidityCheck()) {
+           // Todo : change it into axios post request
+          console.log('login \n' + this.form.username + '\n' + this.form.password)
+        }
+      }
+    },
+    onValidityCheck () {
+      // Todo : add more complex validity check.
+      if (this.form.password.length < 6) {
+        this.validity = false
+        this.message = 'Password length is at least 6'
+        return false
+      }
+      return true
+    }
   }
 }
 </script>
 
 <style lang="stylus" scoped>
+@import '~styles/variables.styl'
 .login {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  flex-direction: column;
+  align-items: center;  /* block 垂直居中 */
+  justify-content: space-around;  /* block 水平居中 */
+  height: 100vh; /* 垂直居中的时候需要设定 height */
+}
+
+.header-wrapper {
+  height: 10vh;
+  margin-top: 10vh;
+  padding-left: 55vw;
+}
+
+.header-img {
+  height: 100%;
 }
 
 .login-box {
-  width: 55vw;
+  width: 75vw;
   height: 50vh;
+  margin-bottom: 10vh
   background-color: white;
+  opacity: 0.85
   border-radius: 5px;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
 }
 
-.login-title {
+.image-wrapper {
   text-align: center;
-  padding-top: 5vh;
+  padding-top: 2.5vh;
+}
+
+.login-avater {
+  height: 5vh;
+  width: 10vh;
 }
 
 .label {
@@ -103,6 +154,8 @@ export default {
 .checkBox {
   width:79%;
   padding-top: 2vh;
+  display: flex;
+  justify-content: center;
 }
 
 .field-box {
@@ -111,8 +164,15 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
 .field {
   width : 35vw;
+}
+
+.validity-check-info {
+  margin-top: .1rem
+  text-align: center
+  color: red;
 }
 
 .button-box {
@@ -122,17 +182,20 @@ export default {
   align-items : center;
   justify-content : center;
 }
+
 .loginButton {
   margin-top: 3vh;
   width: 100%;
 }
+
 .signupButton {
   width: 100%;
   margin-left:0;
   margin-top:1vh;
 }
+
 .bkPhoto {
-  z-index: -100;
+  z-index: $backgroundIndex;
   position: fixed;
   width: 100vw;
   height: 100vh;
