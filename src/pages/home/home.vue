@@ -76,7 +76,7 @@ export default {
         }
       } else {
         if (this.onValidityCheck()) {
-           // Todo : change it into axios post request
+          // Todo : change it into axios post request
           console.log('login \n' + this.form.username + '\n' + this.form.password)
         }
       }
