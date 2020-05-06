@@ -106,8 +106,7 @@ export default {
 
 .header-wrapper {
   height: 10vh;
-  margin-top: 10vh;
-  padding-left: 55vw;
+  align-content: center;
 }
 
 .header-img {
@@ -115,7 +114,7 @@ export default {
 }
 
 .login-box {
-  width: 75vw;
+  width: 60vw;
   height: 50vh;
   margin-bottom: 10vh
   background-color: white;
@@ -136,9 +135,9 @@ export default {
 }
 
 .label {
-  width:40px;
-  display : flex;
-  align-items : center;
+  width: 10vw;
+  display: flex;
+  align-items: center;
 }
 
 .account {
@@ -153,9 +152,27 @@ export default {
 
 .checkBox {
   width:79%;
-  padding-top: 2vh;
   display: flex;
+  align-items: center;
   justify-content: center;
+}
+
+.checkBox >>> .el-checkbox {
+  align-items: center;
+  justify-content: center;
+}
+
+.checkBox >>> .el-checkbox__label {
+  line-height: 3vh;
+  font-size: 2.5vh;
+  margin-top: 2vh
+}
+
+.checkBox >>> .el-checkbox__inner {
+  width: 3vh;
+  height: 3vh;
+  border-radius: 1vh;
+  border: .4vh solid #DCDFE6;
 }
 
 .field-box {
@@ -165,8 +182,25 @@ export default {
   justify-content: center;
 }
 
+.field >>> .el-input__inner {
+  line-height: 5vh;
+  height: 5vh;
+  font-size: 1vh;
+  border-radius: 1vh;
+  border: .4vh solid #DCDFE6;
+  padding: 0 2vw;
+}
+
 .field {
-  width : 35vw;
+  width: 35vw;
+  line-height: 5vh
+  height: 5vh
+}
+
+.el-input__inner {
+  line-height: 5vh !important
+  border-radius: 3px
+  height: 5vh !important
 }
 
 .validity-check-info {
@@ -183,13 +217,20 @@ export default {
   justify-content : center;
 }
 
+.button-box >>> .el-button {
+  padding: 0 20px
+  font-size: 2vw
+}
+
 .loginButton {
-  margin-top: 3vh;
-  width: 100%;
+  margin-top: 1vh;
+  height: 5vh;
+  width: 40vw;
 }
 
 .signupButton {
-  width: 100%;
+  width: 40vw;
+  height: 5vh;
   margin-left:0;
   margin-top:1vh;
 }
