@@ -1,24 +1,29 @@
 <template>
-  <div>
-    <echart-demo></echart-demo>
-  </div>
+  <el-container class="wrap">
+    <el-header height="12.5vh">
+      <the-header />
+    </el-header>
+  </el-container>
 </template>
 
 <script>
-import AdminContent from './components/content'
-import AdminHeader from './components/adminHeader'
-import EchartDemo from './components/echartdemo'
+import TheHeader from './components/TheHeader'
 export default {
   name: 'Admin',
   components: {
-    AdminHeader: AdminHeader,
-    AdminContent: AdminContent,
-    EchartDemo: EchartDemo
+    TheHeader: TheHeader
   }
 }
 </script>
 
 <style lang="stylus" scoped>
-  .el-header
-    padding: 0
+.wrap {
+  min-height: 96vh;
+  .el-header {
+    position: relative;
+    background-color: #409EFF;
+    line-height: 80px;
+    padding: 0 0
+  }
+}
 </style>

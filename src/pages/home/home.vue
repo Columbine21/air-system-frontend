@@ -10,14 +10,15 @@
           <img class="login-avater" src="../../assets/avater.jpeg" />
         </div>
         <div class="field-box">
-          <!-- <el-form-item label="账号" prop="username" class="account"> -->
           <div class="account">
-            <span class="label">账号</span>
-            <el-input type="text" class='field' placeholder="请输入账号" v-model="form.username" />
+            <el-form-item label="账号" prop="username">
+              <el-input type="text" class='field' placeholder="请输入账号" v-model="form.username" />
+            </el-form-item>
           </div>
           <div class="password">
-            <span class="label">密码</span>
-            <el-input type="password" class='field' placeholder="请输入密码" v-model="form.password" />
+            <el-form-item label="密码" prop="password">
+              <el-input type="password" class='field' placeholder="请输入密码" v-model="form.password" />
+            </el-form-item>
           </div>
           <div class="checkBox">
             <el-checkbox v-model="isadmin">Admin</el-checkbox>
@@ -58,7 +59,10 @@ export default {
         username: [
           { required: true, message: '账号不可为空', trigger: 'blur' }
         ],
-        password: [{ required: true, message: '密码不可为空', trigger: 'blur' }]
+        password: [
+          { required: true, message: '密码不可为空', trigger: 'blur' },
+          {min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'blur'}
+        ]
       },
       // 对话框显示和隐藏
       dialogVisible: false
@@ -75,20 +79,9 @@ export default {
           this.message = 'User Name or Password can not be null'
         }
       } else {
-        if (this.onValidityCheck()) {
-          // Todo : change it into axios post request
-          console.log('login \n' + this.form.username + '\n' + this.form.password)
-        }
+        // Todo : change it into axios post request
+        console.log('login \n' + this.form.username + '\n' + this.form.password)
       }
-    },
-    onValidityCheck () {
-      // Todo : add more complex validity check.
-      if (this.form.password.length < 6) {
-        this.validity = false
-        this.message = 'Password length is at least 6'
-        return false
-      }
-      return true
     }
   }
 }
@@ -141,12 +134,11 @@ export default {
 }
 
 .account {
-  padding-top: 3vh;
+  padding-top: 2vh;
   display: flex;
 }
 
 .password {
-  padding-top: 2vh;
   display: flex;
 }
 
@@ -158,6 +150,7 @@ export default {
 }
 
 .checkBox >>> .el-checkbox {
+  font-size: 4px
   align-items: center;
   justify-content: center;
 }
@@ -165,7 +158,7 @@ export default {
 .checkBox >>> .el-checkbox__label {
   line-height: 3vh;
   font-size: 2.5vh;
-  margin-top: 2vh
+  // margin-top: 2vh
 }
 
 .checkBox >>> .el-checkbox__inner {
@@ -173,6 +166,19 @@ export default {
   height: 3vh;
   border-radius: 1vh;
   border: .4vh solid #DCDFE6;
+}
+..checkBox >>> .el-checkbox__input {
+  height: 2vh
+  line-height: 2vh
+}
+
+.checkBox >>> .el-checkbox__inner::after{
+  height: 0;
+  width: 0;
+}
+
+.el-form-item {
+    margin-bottom: 2vh;
 }
 
 .field-box {
@@ -191,16 +197,41 @@ export default {
   padding: 0 2vw;
 }
 
+.account >>> .el-form-item__content {
+  display: flex
+}
+
+.account >>> .el-form-item__label {
+  line-height: 5vh;
+  font-size: 2vh;
+  padding: 0 2vw 0 0;
+}
+.account >>> .el-form-item__error {
+  font-size: .2vh;
+  padding-top: .5vh;
+  line-height: 2.5vh;
+}
+
+.password >>> .el-form-item__label {
+  line-height: 5vh;
+  font-size: 2vh;
+  padding: 0 2vw 0 0;
+}
+
+.password >>> .el-form-item__content {
+  display: flex
+}
+
+.password >>> .el-form-item__error {
+  font-size: .2vh;
+  padding-top: .5vh;
+  line-height: 2.5vh;
+}
+
 .field {
   width: 35vw;
   line-height: 5vh
   height: 5vh
-}
-
-.el-input__inner {
-  line-height: 5vh !important
-  border-radius: 3px
-  height: 5vh !important
 }
 
 .validity-check-info {
