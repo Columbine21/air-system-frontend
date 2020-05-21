@@ -87,9 +87,6 @@
               </el-slider>
             </div>
           </el-card>
-
-          
-          
         </div>
         <div v-show="showControl.selectInspect">
           <el-divider direction="vertical"></el-divider>
@@ -104,15 +101,16 @@
                 <el-table-column prop="temperature" label="设定温度" width="110" /> 
                 <el-table-column prop="mode" label="设定风速" />
               </el-table>
-              
             </el-card>
           </el-col>
           <el-col :span="12">
+
           </el-col>
         </div>
         <div v-show="showControl.selectStatistics">
           <el-divider direction="vertical"></el-divider>
           <el-col :span="12">
+            <statistic-form></statistic-form>
           </el-col>
           <el-col :span="12">
           </el-col>
@@ -123,8 +121,12 @@
 </template>
 
 <script>
+import statisticForm from "@/pages/admin/subpages/statisticForm"
 export default {
   name: 'Admin',
+  components: {
+    statisticForm: statisticForm
+  },
   data () {
     return {
       showControl: {
