@@ -1,12 +1,12 @@
 <template>
 
-	<el-container style="height: 750px; border: 1px solid #eee">
-		<el-aside width="200px" style="background-color: rgb(84, 92, 100)">
-			<el-menu :default-active="set" @select="showChange" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
+	<el-container style="height: 100vh; border: 1px solid #eee">
+		<el-aside width="20vw" style="background-color: rgb(84, 92, 100)">
+			<el-menu :default-active="default_selected" @select="showChange" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
 				<el-menu-item index="info">
 					<template slot="title"><i class="el-icon-s-platform"></i>显示面板</template>
 				</el-menu-item>
-				<el-menu-item index="set">
+				<el-menu-item index="setting">
 					<template slot="title"><i class="el-icon-set-up"></i>调节</template>
 				</el-menu-item>
 				<el-menu-item index="money">
@@ -26,33 +26,33 @@
 			</el-header>
 
 			<el-main>
-				<dev v-show="show_info">
+				<div v-show="show_info">
 					<span>info</span>
-				</dev>
+				</div>
 
-				<dev v-show="show_set">
+				<div v-show="show_set">
 					<span>设定温度： {{marksTemp[tempture]}} </span> 
 					<div class="block">
 						<span class="demonstration">温度</span>
-						<el-slider v-model="tempture" step="20" show-stops label='12313' :marks="marksTemp">
+						<el-slider v-model="tempture" :step='20' show-stops label='12313' :marks="marksTemp">
 						</el-slider>
 					</div>
 					<div class="block">
 						<span>设定风速：{{marksWind[wind]}}</span>
 						<span class="demonstration">风速</span>
-						<el-slider v-model="wind" step="50" input-size="small" show-stops :marks="marksWind">
+						<el-slider v-model="wind" :step='50' input-size="small" show-stops :marks="marksWind">
 						</el-slider>
 					</div>
-				</dev>
+				</div>
 
-				<dev v-show="show_money">
+				<div v-show="show_money">
 					<span>当前费用：{{money}}</span>
 
-				</dev>
+				</div>
 
-				<dev v-show="show_temp">
+				<div v-show="show_temp">
 					<span>当前温度{{roomtemp}}</span>
-				</dev>
+				</div>
 			</el-main>
 		</el-container>
 
@@ -63,7 +63,7 @@
 <script>
 	export default {
 		name: 'Users',
-		data() {
+		data () {
 			const item = {
 				date: '2016-05-02',
 				name: '王小虎',
@@ -72,6 +72,7 @@
 			return {
 				name: 'zfh',
 				tableData: Array(20).fill(item),
+				default_selected: 'setting',
 				show_info: true,
 				show_set: false,
 				show_money: false,
@@ -129,7 +130,7 @@
 	.el-header {
 		background-color: #B3C0D1;
 		color: #333;
-		line-height: 60px;
+		line-height: 8vh;
 	}
 
 	.el-aside {
