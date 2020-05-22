@@ -126,14 +126,14 @@
           <el-col :span="12">
             <statistic-form @StatisticReq="showStatisticDetails"></statistic-form>
           </el-col>
-          <el-col :span="12">
-            <el-card style="margin:5vh 3%; width: 90%;">
+          <el-col :span="12" v-show="statisticInfo.showCharts">
+            <el-card style="margin:5vh 10%; width: 80%;">
               <div slot="header">
                 <span>Summary</span>
               </div>
               <div>总计盈利&ensp; :</div>
               <div style="margin-top: 3vh">计费标准&ensp; :</div>
-              <div id="statisticCharts" style="width: 80%; height: 300px; margin-left: 5%; margin-top: 3vh"></div>
+              <div id="statisticCharts" style="width: 100%; height: 300px; margin-left: 5%; margin-top: 3vh"></div>
             </el-card>
           </el-col>
         </div>
@@ -255,7 +255,7 @@ export default {
         }
       },
       statisticInfo: {
-
+        showCharts: false,
         chartOption: {
           title: {
             text: '一周气温变化'
@@ -301,6 +301,7 @@ export default {
       this.inspectInfo.form.roomId = row.roomId
     },
     showStatisticDetails (roomId, startDate, peroid) {
+      this.statisticInfo.showCharts = true
       alert(roomId)
       var chartDom = document.getElementById("statisticCharts")
       
