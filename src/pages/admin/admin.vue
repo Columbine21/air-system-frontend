@@ -133,7 +133,7 @@
               </div>
               <div>总计盈利&ensp; :</div>
               <div style="margin-top: 3vh">计费标准&ensp; :</div>
-              <div id="statisticCharts" style="width: 100%; height: 300px; margin-left: 5%; margin-top: 3vh"></div>
+              <div id="statisticCharts" style="height: 300px; width: 280px; margin-left: 5%; margin-top: 3vh"></div>
             </el-card>
           </el-col>
         </div>
