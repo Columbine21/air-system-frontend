@@ -53,7 +53,7 @@ export default {
   },
   methods: {
     onSubmit () {
-
+      this.$emit('StatisticReq', this.form.roomId, this.form.date, this.form.peroid)
     }, 
     onClear () {
       this.form.roomId = ''

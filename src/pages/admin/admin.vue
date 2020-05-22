@@ -124,9 +124,17 @@
         <div v-show="showControl.selectStatistics">
           <el-divider direction="vertical"></el-divider>
           <el-col :span="12">
-            <statistic-form></statistic-form>
+            <statistic-form @StatisticReq="showStatisticDetails"></statistic-form>
           </el-col>
           <el-col :span="12">
+            <el-card style="margin:5vh 3%; width: 90%;">
+              <div slot="header">
+                <span>Summary</span>
+              </div>
+              <div>总计盈利&ensp; :</div>
+              <div style="margin-top: 3vh">计费标准&ensp; :</div>
+              <div id="statisticCharts" style="width: 80%; height: 300px; margin-left: 5%; margin-top: 3vh"></div>
+            </el-card>
           </el-col>
         </div>
       </el-main>
@@ -135,6 +143,7 @@
 </template>
 
 <script>
+import echarts from 'echarts'
 import statisticForm from "@/pages/admin/subpages/statisticForm"
 export default {
   name: 'Admin',
@@ -244,6 +253,22 @@ export default {
             spent: null
           }]
         }
+      },
+      statisticInfo: {
+
+        chartOption: {
+          xAxis: {
+              type: 'category',
+              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          },
+          yAxis: {
+              type: 'value'
+          },
+          series: [{
+              data: [820, 932, 901, 934, 1290, 1330, 1320],
+              type: 'line'
+          }]
+        }
       }
     }
   },
@@ -271,6 +296,30 @@ export default {
       console.log(row.roomId)
       this.inspectInfo.InspectDetails = true
       this.inspectInfo.form.roomId = row.roomId
+    },
+    showStatisticDetails (roomId, startDate, peroid) {
+      alert(roomId)
+      var chartDom = document.getElementById("statisticCharts")
+      
+      var myChart = echarts.init(chartDom)
+      var chartOption = {
+        title: {
+           text: '未来一周气温变化'
+        },
+        xAxis: {
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: [820, 932, 901, 934, 1290, 1330, 1320],
+            type: 'line'
+        }]
+      }
+      
+      myChart.setOption(chartOption, true)
     }
   },
   computed: {
