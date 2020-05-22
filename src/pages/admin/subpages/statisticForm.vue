@@ -8,6 +8,16 @@
         <el-form-item label="房间号码" prop="roomId">
           <el-input v-model="form.roomId" />
         </el-form-item>
+        
+        <!-- optional function -->
+        <el-form-item label="查询内容">
+          <el-select v-model="form.quireType" placeholder="请选择查询内容">
+            <el-option label="房间温度" value="temperature"></el-option>
+            <el-option label="房间功率" value="power"></el-option>
+            <el-option label="房间计费" value="spent"></el-option>
+          </el-select>
+        </el-form-item>
+        <!-- optional function -->
 
         <el-form-item label="起始时间" prop="date">
           <el-date-picker type="date" placeholder="选择日期" v-model="form.date" value-format="yyyy-MM-dd" style="width: 100%;"></el-date-picker>
@@ -35,6 +45,9 @@ export default {
     return {
       form: {
         roomId: '',
+        // optional function
+        quireType: null,
+        // optional function
         date: '',
         peroid: ''
       }, 

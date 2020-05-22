@@ -257,6 +257,9 @@ export default {
       statisticInfo: {
 
         chartOption: {
+          title: {
+            text: '一周气温变化'
+          },
           xAxis: {
               type: 'category',
               data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -302,24 +305,7 @@ export default {
       var chartDom = document.getElementById("statisticCharts")
       
       var myChart = echarts.init(chartDom)
-      var chartOption = {
-        title: {
-           text: '未来一周气温变化'
-        },
-        xAxis: {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        },
-        yAxis: {
-            type: 'value'
-        },
-        series: [{
-            data: [820, 932, 901, 934, 1290, 1330, 1320],
-            type: 'line'
-        }]
-      }
-      
-      myChart.setOption(chartOption, true)
+      myChart.setOption(this.statisticInfo.chartOption, true)
     }
   },
   computed: {
