@@ -56,7 +56,9 @@ export default {
 
     }, 
     onClear () {
-
+      this.form.roomId = ''
+      this.form.date = ''
+      this.form.peroid = ''
     }
   }
 }

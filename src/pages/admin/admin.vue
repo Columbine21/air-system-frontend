@@ -91,12 +91,12 @@
         <div v-show="showControl.selectInspect">
           <el-divider direction="vertical"></el-divider>
           <el-col :span="12">
-            <el-card style="margin-left: 4vw; margin-top: 2vw; width: 80%;">
+            <el-card style="margin-left: 3.5vw; margin-top: 6vh; width: 80%;">
               <div slot="header">
                 <span>从控机请求列表</span>
                 <el-button style="float: right; padding: 3px 0" type="text">Refresh</el-button>
               </div>
-              <el-table :data="tableData" height="420" style="width: 100%" stripe border >
+              <el-table :data="tableData" height="420" style="width: 100%" stripe border @row-dblclick="showRoomDetails">
                 <el-table-column prop="roomId" label="房间号" width="110" /> 
                 <el-table-column prop="temperature" label="设定温度" width="110" /> 
                 <el-table-column prop="mode" label="设定风速" />
@@ -104,7 +104,21 @@
             </el-card>
           </el-col>
           <el-col :span="12">
-
+            <el-card v-show="inspectInfo.InspectDetails" style="margin-left: 3.5vw; margin-top: 6vh; width: 80%;">
+              <div slot="header">
+                <span>房间详细信息</span>
+              </div>
+              <div>房间号码&ensp; :&ensp; {{inspectInfo.form.roomId}}</div>
+              <div style="margin-top: 4vh">使用记录</div>
+              <el-table :data="inspectInfo.form.record" height="220" style="width: 100%; margin-top: 3vh" stripe border>
+                <el-table-column prop="startTime" label="开始时间" width="68" /> 
+                <el-table-column prop="endTime" label="结束时间" width="68" /> 
+                <el-table-column prop="setTemperature" label="设定温度" width="68" />
+                <el-table-column prop="mode" label="设定风速"  width="68"/>
+                <el-table-column prop="spent" label="总共花费"  width="68"/>
+              </el-table>
+              <div style="margin-top: 3vh"> 用户安全评定&ensp; :&ensp;</div>
+            </el-card>
           </el-col>
         </div>
         <div v-show="showControl.selectStatistics">
@@ -186,7 +200,51 @@ export default {
             temperature: '19',
             mode: 'medium'
           }
-      ]
+      ],
+      inspectInfo: {
+        InspectDetails: false,
+        form: {
+          roomId: '',
+          record: [{
+            startTime: '',
+            endTime: '',
+            setTemperature: null,
+            setMode: '',
+            spent: null
+          },
+          {
+            startTime: '',
+            endTime: '',
+            setTemperature: null,
+            setMode: '',
+            spent: null
+          },{
+            startTime: '',
+            endTime: '',
+            setTemperature: null,
+            setMode: '',
+            spent: null
+          },{
+            startTime: '',
+            endTime: '',
+            setTemperature: null,
+            setMode: '',
+            spent: null
+          },{
+            startTime: '',
+            endTime: '',
+            setTemperature: null,
+            setMode: '',
+            spent: null
+          },{
+            startTime: '',
+            endTime: '',
+            setTemperature: null,
+            setMode: '',
+            spent: null
+          }]
+        }
+      }
     }
   },
   methods: {
@@ -208,6 +266,11 @@ export default {
     },
     handleLogout () {
       this.$router.push('/')
+    },
+    showRoomDetails (row) {
+      console.log(row.roomId)
+      this.inspectInfo.InspectDetails = true
+      this.inspectInfo.form.roomId = row.roomId
     }
   },
   computed: {
