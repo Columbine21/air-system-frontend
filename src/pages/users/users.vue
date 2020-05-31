@@ -2,7 +2,8 @@
 
 	<el-container style="height: 100vh; border: 1px solid #eee">
 		<el-aside width="20vw" style="background-color: rgb(84, 92, 100)">
-			<el-menu :default-active="default_selected" @select="showChange" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
+			<el-menu :default-active="default_selected" @select="showChange" background-color="#545c64" text-color="#fff"
+			 active-text-color="#ffd04b">
 				<el-menu-item index="info">
 					<template slot="title"><i class="el-icon-s-platform"></i>显示面板</template>
 				</el-menu-item>
@@ -27,31 +28,22 @@
 
 			<el-main>
 				<div v-show="show_info">
-					<span>info</span>
+					<span>info {{Settings.state}} {{Settings.temperature}} {{Settings.wind}}</span>
+					<display-panal :roomId='RoomInfo.roomId' :temp='RoomInfo.roomtemp' :wind='Settings.wind' :money='RoomInfo.money'
+					 :state='Settings.state' :onoff='RoomInfo.onoff' :setTemp='Settings.temperature' :time='RoomInfo.time'></display-panal>
 				</div>
 
-				<div v-show="show_set">
-					<span>设定温度： {{marksTemp[tempture]}} </span> 
-					<div class="block">
-						<span class="demonstration">温度</span>
-						<el-slider v-model="tempture" :step='20' show-stops label='12313' :marks="marksTemp">
-						</el-slider>
-					</div>
-					<div class="block">
-						<span>设定风速：{{marksWind[wind]}}</span>
-						<span class="demonstration">风速</span>
-						<el-slider v-model="wind" :step='50' input-size="small" show-stops :marks="marksWind">
-						</el-slider>
-					</div>
+				<div v-show="show_setting">
+					<span>info {{Settings.state}} {{Settings.temperature}} {{Settings.wind}}</span>
+					<setting @SettingReq="returnSettingInfo"></setting>
 				</div>
 
 				<div v-show="show_money">
-					<span>当前费用：{{money}}</span>
-
+					<charts @ChartingReq='returnMoney' :roomId='RoomInfo.roomId' id='moneyCharts'></charts>
 				</div>
 
 				<div v-show="show_temp">
-					<span>当前温度{{roomtemp}}</span>
+					<charts @ChartingReq='returnTemp' :roomId='RoomInfo.roomId' id='tempCharts'></charts>
 				</div>
 			</el-main>
 		</el-container>
@@ -61,9 +53,17 @@
 </template>
 
 <script>
+	import setting from '@/pages/users/subpages/setting'
+	import charts from '@/pages/users/subpages/charts'
+	import displayPanel from '@/pages/users/subpages/displayPanel'
 	export default {
 		name: 'Users',
-		data () {
+		components: {
+			setting: setting,
+			charts: charts,
+			displayPanal: displayPanel
+		},
+		data() {
 			const item = {
 				date: '2016-05-02',
 				name: '王小虎',
@@ -73,28 +73,23 @@
 				name: 'zfh',
 				tableData: Array(20).fill(item),
 				default_selected: 'setting',
-				show_info: true,
-				show_set: false,
+				show_info: false,
+				show_setting: true,
 				show_money: false,
 				show_temp: false,
 				machine: true,
-				marksWind: {
-					0: 'low',
-					50: 'medium',
-					100: 'high'
+				Settings: {
+					wind: 0,
+					temperature: 0,
+					state: '制冷'
 				},
-				marksTemp: {
-					0: '26°C',
-					20: '27°C',
-					40: '28°C',
-					60: '29°C',
-					80: '30°C',
-					100: '31°C'
-				},
-				wind: 0,
-				tempture: 0,
-				money: 0,
-				roomtemp: 27
+				RoomInfo: {
+					money: 0,
+					roomtemp: 27,
+					roomId: '2-123',
+					onoff: '开',
+					time: 30
+				}
 			}
 		},
 		methods: {
@@ -103,24 +98,35 @@
 				if (type === 'info') {
 					this.show_info = true
 					this.show_money = false
-					this.show_set = false
+					this.show_setting = false
 					this.show_temp = false
 				} else if (type === 'money') {
 					this.show_info = false
 					this.show_money = true
-					this.show_set = false
+					this.show_setting = false
 					this.show_temp = false
-				} else if (type === 'set') {
+				} else if (type === 'setting') {
 					this.show_info = false
 					this.show_money = false
-					this.show_set = true
+					this.show_setting = true
 					this.show_temp = false
 				} else if (type === 'temp') {
 					this.show_info = false
 					this.show_money = false
-					this.show_set = false
+					this.show_setting = false
 					this.show_temp = true
 				}
+			},
+			returnSettingInfo(wind, temperature, state) {
+				this.Settings.wind = wind
+				this.Settings.temperature = temperature
+				this.Settings.state = state
+			},
+			returnMoney(money) {
+				this.RoomInfo.money = money
+			},
+			returnTemp(temp) {
+				this.RoomInfo.roomtemp = temp
 			}
 		}
 	}
