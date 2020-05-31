@@ -1,0 +1,103 @@
+<template>
+	<div>
+		<el-divider direction="vertical"></el-divider>
+		<el-card style="margin:5vh 10%; width: 80%;">
+			<div slot="header">
+				<span>房间：{{roomId}}</span>
+			</div>
+			<div>{{text}}&ensp; :&ensp; &ensp; {{chartInfo[chartIndex].nowValue}}&ensp; {{chartInfo[chartIndex].unit}}</div>
+			<div style="height: 300px; width: 700px; margin-left: 15%; margin-top: 3vh" :id='id'></div>
+		</el-card>
+	</div>
+</template>
+
+<script>
+	import echarts from 'echarts'
+	export default {
+		name: 'charts',
+		props: ['roomId', 'id', 'state'],
+		data() {
+			return {
+				statisticInfo: {
+					showCharts: true,
+					chartOption: {
+						title: {
+							text: ''
+						},
+						xAxis: {
+							type: 'category',
+							data: [],
+							name: ''
+						},
+						yAxis: {
+							type: 'value',
+							name: '',
+							min: ''
+						},
+						series: {
+							data: [],
+							type: 'line'
+						}
+					}
+				},
+				chartInfo: [{
+					timelist: ['5:00', '5:30', '6:00', '6:30', '7:00', '7:30', '8:00', '8:30', '9:00'],
+					datalist: [0, 1.2, 1.8, 2.1, 2.3, 2.3, 2.3, 2.5, 2.9],
+					xname: '时间',
+					yname: '费用',
+					text: '费用变化',
+					nowValue: 0,
+					unit: '元',
+					min: 0
+				}, {
+					timelist: ['5:00', '5:30', '6:00', '6:30', '7:00', '7:30', '8:00', '8:30', '9:00'],
+					datalist: [27, 26, 25, 25, 26, 27, 28, 27, 26],
+					xname: '时间',
+					yname: '温度',
+					text: '温度变化',
+					nowValue: 27,
+					unit: '°C',
+					min: 17
+				}],
+				chartIndex: 0,
+				text: ''
+			}
+		},
+		mounted() {
+			this.init()
+			this.showChart()
+		},
+		methods: {
+			init() {
+				if (this.id === 'moneyCharts') {
+					this.chartIndex = 0
+					this.text = '总计费'
+				} else {
+					this.chartIndex = 1
+					this.text = '当前温度'
+				}
+				this.statisticInfo.chartOption.xAxis.data = this.chartInfo[this.chartIndex].timelist
+				this.statisticInfo.chartOption.series.data = this.chartInfo[this.chartIndex].datalist
+				this.statisticInfo.chartOption.xAxis.name = this.chartInfo[this.chartIndex].xname
+				this.statisticInfo.chartOption.yAxis.name = this.chartInfo[this.chartIndex].yname
+				this.statisticInfo.chartOption.title.text = this.chartInfo[this.chartIndex].text
+				this.statisticInfo.chartOption.yAxis.min = this.chartInfo[this.chartIndex].min
+				this.chartInfo[this.chartIndex].nowValue = this.chartInfo[this.chartIndex].datalist[this.chartInfo[this.chartIndex].datalist.length - 1]
+				this.$emit('ChartingReq', this.chartInfo[this.chartIndex].nowValue)
+			},
+			showChart() {
+				console.log('charts')
+				console.log(this.id)
+				var chartDom = document.getElementById(this.id)
+				var myChart = echarts.init(chartDom)
+				myChart.setOption(this.statisticInfo.chartOption, true)
+			},
+			getId() {
+				return this.id
+			}
+		}
+	}
+</script>
+
+<style lang="stylus" scoped>
+</style>
