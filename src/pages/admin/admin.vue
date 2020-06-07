@@ -73,6 +73,7 @@
           <el-card style="margin:5vh 20%; width: 60%;">
             <div slot="header">
               <span>中央空调状态</span>
+              <el-button style="float: right; padding: 3px 0" type="text">应用</el-button>
             </div>
             <div>当前状态&ensp; :&ensp; {{Settings.State}}</div>
             <div style="margin-top: 3vh">默认模式&ensp; :&ensp; {{Mode}}</div>
@@ -107,15 +108,16 @@
             <el-card v-show="inspectInfo.InspectDetails" style="margin-left: 3.5vw; margin-top: 6vh; width: 80%;">
               <div slot="header">
                 <span>房间详细信息</span>
+                <el-button style="float: right; padding: 3px 0" type="text" @click="HiddenDetails">Hidden</el-button>
               </div>
               <div>房间号码&ensp; :&ensp; {{inspectInfo.form.roomId}}</div>
               <div style="margin-top: 4vh">使用记录</div>
               <el-table :data="inspectInfo.form.record" height="220" style="width: 100%; margin-top: 3vh" stripe border>
-                <el-table-column prop="startTime" label="开始时间" width="68" /> 
-                <el-table-column prop="endTime" label="结束时间" width="68" /> 
-                <el-table-column prop="setTemperature" label="设定温度" width="68" />
-                <el-table-column prop="mode" label="设定风速"  width="68"/>
-                <el-table-column prop="spent" label="总共花费"  width="68"/>
+                <el-table-column prop="startTime" label="开始时间" width="86" /> 
+                <el-table-column prop="endTime" label="结束时间" width="86" /> 
+                <el-table-column prop="setTemperature" label="设定温度" width="86" />
+                <el-table-column prop="mode" label="设定风速"  width="86"/>
+                <el-table-column prop="spent" label="总共花费"  width="86"/>
               </el-table>
               <div style="margin-top: 3vh"> 用户安全评定&ensp; :&ensp;</div>
             </el-card>
@@ -277,6 +279,7 @@ export default {
   },
   methods: {
     showChange(key, keyPath) {
+      // deal with aside bar event. (change which to show)
       console.log(key + '...' + keyPath);
       if (key == 'settings') {
         this.showControl.selectSettings = true,
@@ -293,14 +296,20 @@ export default {
       }
     },
     handleLogout () {
+      // click logout button to return the login window.
       this.$router.push('/')
     },
     showRoomDetails (row) {
       console.log(row.roomId)
+      // Todo : here to use the repondence info.
       this.inspectInfo.InspectDetails = true
       this.inspectInfo.form.roomId = row.roomId
     },
+    HiddenDetails () {
+      this.inspectInfo.InspectDetails = false
+    },
     showStatisticDetails (roomId, startDate, peroid) {
+      // Todo : here to use the respondence data
       this.statisticInfo.showCharts = true
       alert(roomId)
       var chartDom = document.getElementById("statisticCharts")
@@ -341,6 +350,12 @@ export default {
         }
       }
     }
+  },
+  mounted () {
+    // 1. use store thing to change the this.Manager.
+    // 2. axios request : time / open / state.
+    // 3. store thing into store.
+    // 4. axios request : slave usage list.  result should contain tableData & inspectInfo.
   }
 }
 </script>

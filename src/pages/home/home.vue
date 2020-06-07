@@ -35,7 +35,6 @@
 
 <script>
 import axios from 'axios'
-
 export default {
   name: 'Login',
   data () {
@@ -60,25 +59,41 @@ export default {
         userType: [
           {required: true, message: '用户类别不可为空'}
         ]
-      },
-      // 对话框显示和隐藏
-      dialogVisible: false
+      }
     }
   },
   methods: {
     onSubmit (type) {
       if (type === 'loginForm') {
         if (this.form.password && this.form.username) {
-          // Todo : change it into axios post request
-          console.log('login \n' + this.form.username + '\n' + this.form.password + '\n' + this.form.userType)
+          // Todo : change url into ours. & do some simple test.
+          axios.post('https://reqres.in/api/login', {
+            ...this.form
+          }).then(this.getSigninRes)
         } else {
           this.validity = false
           this.message = 'User Name or Password can not be null'
         }
       } else {
-        // Todo : change it into axios post request
-        console.log('login \n' + this.form.username + '\n' + this.form.password)
+        // Todo : change url into ours. & do some simple test.
+        axios.post('https://reqres.in/api/signup', {
+          ...this.form
+          }).then(this.getSignupRes)
       }
+    },
+    getSignupRes (res) {
+      // Todo : deal with the res, if succ, alert("创建成功"), else alert("创建失败")
+      console.log(res);
+    },
+    getSigninRes (res) {
+      // Todo : deal with the res, if succ, store the corresponding info & router, else alert("创建失败").
+      // {ret_code: ,
+      //  Manager: {
+      //    avaterUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
+      //    name: "Jason"
+      //  }
+      // }
+      console.log(res);
     }
   }
 }
