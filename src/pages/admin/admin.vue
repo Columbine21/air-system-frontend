@@ -55,7 +55,7 @@
             <div style="margin-top: 4px; font-size: 13px">系统时间</div>
             <el-date-picker
               ref="date"
-              v-model="Settings.Date"
+              v-model="MasterState.Basic.SystemTime"
               align="right"
               type="date"
               value-format="yyyy-MM-dd"
@@ -64,7 +64,7 @@
               >
             </el-date-picker>
             <el-switch style="margin: 20px 0 0 40%"
-              v-model="Settings.State"
+              v-model="MasterState.Basic.Poweron"
               active-text="开启"
               inactive-text="关闭">
             </el-switch>
@@ -75,16 +75,16 @@
               <span>中央空调状态</span>
               <el-button style="float: right; padding: 3px 0" type="text">应用</el-button>
             </div>
-            <div>当前状态&ensp; :&ensp; {{Settings.State}}</div>
+            <div>当前状态&ensp; :&ensp; {{MasterState.Basic.Poweron}}</div>
             <div style="margin-top: 3vh">默认模式&ensp; :&ensp; {{Mode}}</div>
             <div style="margin-top: 3vh">
               <span>温度控制</span>
-              <el-slider style="margin: 0 1vw" v-model="Settings.temperature" :step='20' show-stops :marks="marksTemp">
+              <el-slider style="margin: 0 1vw" v-model="MasterState.Settings.SetTemperature" :step='20' show-stops :marks="marksTemp">
               </el-slider>
             </div>
             <div style="margin-top: 3vh">
               <span>风速控制</span>
-              <el-slider style="margin: 0 1vw" v-model="Settings.wind" :step='50' show-stops :marks="marksWind">
+              <el-slider style="margin: 0 1vw" v-model="MasterState.Settings.SetMode" :step='50' show-stops :marks="marksWind">
               </el-slider>
             </div>
           </el-card>
@@ -146,6 +146,7 @@
 
 <script>
 import echarts from 'echarts'
+
 import statisticForm from "@/pages/admin/subpages/statisticForm"
 export default {
   name: 'Admin',
@@ -158,16 +159,6 @@ export default {
         selectSettings: true,
         selectInspect: false,
         selectStatistics: false
-      },
-      Manager: {
-        avaterUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-        name: "Jason"
-      },
-      Settings: {
-        Date: '2020-5-20',
-        State: 'off',
-        temperature: null,
-        wind: null
       },
       marksWind: {
         0: 'low',
@@ -186,30 +177,6 @@ export default {
             roomId: '1-119',
             temperature: '19',
             mode: 'medium'
-          }, {
-            roomId: '1-119',
-            temperature: '19',
-            mode: 'medium'
-          }, {
-            roomId: '1-119',
-            temperature: '19',
-            mode: 'medium'
-          }, {
-            roomId: '1-119',
-            temperature: '19',
-            mode: 'medium'
-          }, {
-            roomId: '1-119',
-            temperature: '19',
-            mode: 'medium'
-          }, {
-            roomId: '1-119',
-            temperature: '19',
-            mode: 'medium'
-          }, {
-            roomId: '1-119',
-            temperature: '19',
-            mode: 'medium'
           }
       ],
       inspectInfo: {
@@ -217,37 +184,6 @@ export default {
         form: {
           roomId: '',
           record: [{
-            startTime: '',
-            endTime: '',
-            setTemperature: null,
-            setMode: '',
-            spent: null
-          },
-          {
-            startTime: '',
-            endTime: '',
-            setTemperature: null,
-            setMode: '',
-            spent: null
-          },{
-            startTime: '',
-            endTime: '',
-            setTemperature: null,
-            setMode: '',
-            spent: null
-          },{
-            startTime: '',
-            endTime: '',
-            setTemperature: null,
-            setMode: '',
-            spent: null
-          },{
-            startTime: '',
-            endTime: '',
-            setTemperature: null,
-            setMode: '',
-            spent: null
-          },{
             startTime: '',
             endTime: '',
             setTemperature: null,
@@ -297,13 +233,16 @@ export default {
     },
     handleLogout () {
       // click logout button to return the login window.
+      this.$store.commit('Logout')
       this.$router.push('/')
+      
     },
     showRoomDetails (row) {
       console.log(row.roomId)
       // Todo : here to use the repondence info.
       this.inspectInfo.InspectDetails = true
       this.inspectInfo.form.roomId = row.roomId
+      // this.inspectInfo.form.record = 
     },
     HiddenDetails () {
       this.inspectInfo.InspectDetails = false
@@ -315,12 +254,19 @@ export default {
       var chartDom = document.getElementById("statisticCharts")
       
       var myChart = echarts.init(chartDom)
+      // Use the axios response to change chartOption 
       myChart.setOption(this.statisticInfo.chartOption, true)
     }
   },
   computed: {
+    Manager () {
+      return this.$store.state.UserInfo
+    },
+    MasterState () {
+      return this.$store.state.MasterState
+    },
     Season () {
-      return Number(this.Settings.Date.split('-')[1])
+      return Number(this.MasterState.Basic.SystemTime.split('-')[1])
     },
     Mode () {
       if (this.Season >= 5 && this.Season <= 10) {

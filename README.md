@@ -50,6 +50,72 @@
 
 -   快速开始调试（见build setup）
 
+## Frontend-backend Interface
+
+-   登陆前后端接口 （**<u>1</u>**）：
+
+    -   前端 Post 请求 ：相应的 url body 内容包含：
+        -   1.  username: String 2. password: String 3. userType: String
+        -   返回结构：ret_code 代表成功失败。{UserInfo: { name: defaultName(房间名/管理员名), avaterUrl: defaultUrl（管理员头像url）}}
+
+-   注册前后端接口（**<u>2</u>**）：
+
+    -   前端 Post 请求 ：相应的 url body 内容包含：
+        -   1.  username: String 2. password: String 3. userType: String
+        -   返回结构：ret_code 代表成功失败。
+
+-   admin 前后端接口：
+
+    -   admin 在mounted 方法时
+
+        -   请求主控数据 StateRequest Post/Get 方法 无需参数（**<u>3</u>**）
+            -   返回结果：主控全部状态：服务器时间，是否开启空调，温度，风速
+        -   请求所有从控数据 GetAllSlaveState Post/Get 方法 无需参数（**<u>4</u>**）
+            -   返回结果：ret_code 代表成功失败，
+            -   返回结果：`[{RoomId: String, currentTem: Integer, SpeedMode: String, History: [{begin: string, end: string, setTem, setMode, Cost}, ..., {}], SecurityLevel: String}, ... ]`
+
+    -   Setting 开启/关闭 空调 应用button（**<u>5</u>**）
+
+        -   Post 请求： 参数：Poweron : boolean 
+        -   返回：ret_code 代表成功失败
+
+    -   Setting 设置模式 （**<u>6</u>**）
+
+        -   Post 请求：参数：设定温度，设定风速
+        -   返回：ret_code 代表成功失败
+
+    -   Inspect 点击 fresh button  （同（**<u>4</u>**）复用接口函数）
+
+        -   请求所有从控数据 GetAllSlaveState Post/Get 方法 无需参数
+            -   返回结果：ret_code 代表成功失败，
+            -   返回结果：`[{RoomId: String, currentTem: Integer, SpeedMode: String, History: [{begin: string, end: string, setTem, setMode, Cost}, ..., {}], SecurityLevel: String}, ... ]`
+
+    -   Statistic 点击 查询 (**<u>7</u>**)
+
+        -   Post 请求：RoomID + 查询内容（枚举 房间温度/房间功率/房间计费）+ 起始时间 + 统计范围（枚举：Day/Week/Month）
+        -   返回结果：时间段内 总计收益 （计费标准：可以写死在前端 ）+ echarts 图标所需内容
+
+        ```json
+        chartOption: {
+          title: {
+            text: '一周气温变化'
+          },
+          xAxis: {
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [{
+            data: [820, 932, 901, 934, 1290, 1330, 1320],
+            type: 'line'
+          }]
+        }
+        ```
+
+
+
 ## How to contribute 
 
 首先可以使用 `git branch -r` 查看远程分支：这里应该有yzq-dev/master/（zfh-dev 分支）
@@ -59,8 +125,6 @@
 在个人能够使用npm run dev 跑通后可以`git checkout master` `git merge xxx-dev` 
 
 应该注意：在开发之前应使用 `git pull origin master:xxx-dev` 拉取最近branch进行开发。
-
-如果有提交错误，回退版本参考 https://blog.csdn.net/guozhaohui628/article/details/78922946。
 
 ## Build Setup
 

@@ -29,6 +29,7 @@
           <el-button style="margin:5% 20%; width: 60%;" type="primary" v-on:click="onSubmit('signUpForm')">注册</el-button>
       </el-form>
     </el-card>
+    <div>{{counter}}</div>
   </el-container>
   <!-- </div> -->
 </template>
@@ -64,6 +65,9 @@ export default {
   },
   methods: {
     onSubmit (type) {
+      this.$store.commit('increment')
+      this.$store.commit('Login', 'Hello', '')
+      console.log(this.$store.state.count)
       if (type === 'loginForm') {
         if (this.form.password && this.form.username) {
           // Todo : change url into ours. & do some simple test.
@@ -93,7 +97,19 @@ export default {
       //    name: "Jason"
       //  }
       // }
+      // this.$store.commit('Login', 'Hello', 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
       console.log(res);
+    }
+  },
+  mounted () {
+    console.log(this.$store.state.count)
+    this.$store.commit('increment')
+    console.log(this.$store.state.count)
+    // this.$store.commit('Login', 'Hello', 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
+  },
+  computed: {
+    counter () {
+      return this.$store.state.count
     }
   }
 }
