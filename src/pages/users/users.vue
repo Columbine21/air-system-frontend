@@ -21,29 +21,29 @@
 
 		<el-container>
 			<el-header style="text-align: right; font-size: 12px">
-				<el-switch v-model="machine" active-text="开" inactive-text="关" name="空调开关">
+				<el-switch @change="sendOnOff" v-model="machine" active-text="开" inactive-text="关" name="空调开关">
 				</el-switch>
-				<span>{{name}}</span>
+				<span>{{Customer.name}}</span>
 			</el-header>
 
 			<el-main>
+				<sensor @SensorReq='returnSensor' :state='Settings.state' :setTemp='Settings.temperature' :setWind='Settings.wind'
+				 :nowTemp='RoomInfo.roomtemp'></sensor>
 				<div v-show="show_info">
-					<span>info {{Settings.state}} {{Settings.temperature}} {{Settings.wind}}</span>
 					<display-panal :roomId='RoomInfo.roomId' :temp='RoomInfo.roomtemp' :wind='Settings.wind' :money='RoomInfo.money'
 					 :state='Settings.state' :onoff='RoomInfo.onoff' :setTemp='Settings.temperature' :time='RoomInfo.time'></display-panal>
 				</div>
 
 				<div v-show="show_setting">
-					<span>info {{Settings.state}} {{Settings.temperature}} {{Settings.wind}}</span>
-					<setting @SettingReq="returnSettingInfo"></setting>
+					<setting @SettingReq="returnSettingInfo" :nowTemp='this.RoomInfo.roomtemp' :state='this.Settings.state' :token='this.RoomInfo.token'></setting>
 				</div>
 
 				<div v-show="show_money">
-					<charts @ChartingReq='returnMoney' :roomId='RoomInfo.roomId' id='moneyCharts'></charts>
+					<charts :roomId='RoomInfo.roomId' id='moneyCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.templist'></charts>
 				</div>
 
 				<div v-show="show_temp">
-					<charts @ChartingReq='returnTemp' :roomId='RoomInfo.roomId' id='tempCharts'></charts>
+					<charts :roomId='RoomInfo.roomId' id='tempCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.templist'></charts>
 				</div>
 			</el-main>
 		</el-container>
@@ -56,22 +56,19 @@
 	import setting from '@/pages/users/subpages/setting'
 	import charts from '@/pages/users/subpages/charts'
 	import displayPanel from '@/pages/users/subpages/displayPanel'
+	import sensor from '@/pages/users/subpages/sensor'
+	import axios from 'axios'
+
 	export default {
 		name: 'Users',
 		components: {
 			setting: setting,
 			charts: charts,
-			displayPanal: displayPanel
+			displayPanal: displayPanel,
+			sensor: sensor
 		},
 		data() {
-			const item = {
-				date: '2016-05-02',
-				name: '王小虎',
-				address: '上海市普陀区金沙江路 1518 弄'
-			};
 			return {
-				name: 'zfh',
-				tableData: Array(20).fill(item),
 				default_selected: 'setting',
 				show_info: false,
 				show_setting: true,
@@ -85,14 +82,35 @@
 				},
 				RoomInfo: {
 					money: 0,
-					roomtemp: 27,
-					roomId: '2-123',
+					roomtemp: 30,
+					roomId: '101',
+					idNo: '101id',
 					onoff: '开',
-					time: 30
-				}
+					time: 0,
+					token: '',
+					timelist: [],
+					templist: [],
+					moneylist: []
+				},
+				Timer: {
+					timer0: '',
+					timer1: ''
+				},
+				sendFrq: 1000
 			}
 		},
+		mounted() {
+			this.Timer.timer0 = setInterval(this.getlist, 10000);
+			this.Timer.timer0 = setInterval(this.sendTemp, this.sendFrq);
+			this.init()
+		},
 		methods: {
+			init() {
+				this.RoomInfo.timelist.push(0)
+				this.RoomInfo.templist.push(this.RoomInfo.roomtemp)
+				this.RoomInfo.moneylist.push(0)
+				console.log('list0:' + this.RoomInfo.timelist + this.RoomInfo.templist)
+			},
 			showChange(type, p) {
 				console.log(type + '...' + p)
 				if (type === 'info') {
@@ -125,8 +143,67 @@
 			returnMoney(money) {
 				this.RoomInfo.money = money
 			},
-			returnTemp(temp) {
+			returnSensor(temp) {
 				this.RoomInfo.roomtemp = temp
+			},
+			getlist() {
+				this.RoomInfo.time = this.RoomInfo.time + 10;
+				this.RoomInfo.timelist.push(this.RoomInfo.time)
+				this.RoomInfo.templist.push(this.RoomInfo.roomtemp)
+				console.log('timelist:' + this.RoomInfo.timelist)
+				console.log('templist:' + this.RoomInfo.templist)
+			},
+			sendTemp() {
+				axios({
+					method: 'put',
+					url: 'http://101.200.120.102:8080/slave/status',
+					data: {
+						roomT: this.RoomInfo.roomtemp
+					},
+					headers: {
+						'Authorization': this.RoomInfo.token
+					}
+				}).then(this.getSendTempRes)
+			},
+			getSendTempRes(res) {
+				// Todo if success
+				console.log(res)
+			},
+			sendOnOff() {
+				if (this.machine === false) {
+					this.RoomInfo.onoff = '关'
+					axios({
+						method: 'post',
+						url: 'localhost:8080/slave/off', // 关闭请求
+						data: {},
+						headers: {
+							'Authorization': 'Bearer ' + this.RoomInfo.token
+						}
+					}).then(this.getSendOffRes)
+				} else {
+					this.RoomInfo.onoff = '开'
+					axios({
+						method: 'post',
+						url: 'http://101.200.120.102:8080/login/customer', // 关闭请求
+						data: {
+							'roomNo': this.RoomInfo.roomId,
+							'idNo': this.RoomInfo.idNo
+						}
+					}).then(this.getSendOnRes)
+				}
+			},
+			getSendOffRes(res) {
+				// Todo
+				console.log(res)
+			},
+			getSendOnRes(res) {
+				console.log(res.data.data.token)
+				this.RoomInfo.token = res.data.data.token
+			}
+		},
+		computed: {
+			Customer() {
+				return this.$store.state.UserInfo
 			}
 		}
 	}

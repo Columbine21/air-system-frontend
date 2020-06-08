@@ -15,7 +15,7 @@
 	import echarts from 'echarts'
 	export default {
 		name: 'charts',
-		props: ['roomId', 'id', 'state'],
+		props: ['roomId', 'id', 'state', 'timelist', 'datalist'],
 		data() {
 			return {
 				statisticInfo: {
@@ -50,8 +50,8 @@
 					unit: '元',
 					min: 0
 				}, {
-					timelist: ['5:00', '5:30', '6:00', '6:30', '7:00', '7:30', '8:00', '8:30', '9:00'],
-					datalist: [27, 26, 25, 25, 26, 27, 28, 27, 26],
+					timelist: [],
+					datalist: [],
 					xname: '时间',
 					yname: '温度',
 					text: '温度变化',
@@ -60,12 +60,13 @@
 					min: 17
 				}],
 				chartIndex: 0,
-				text: ''
+				text: '',
+				timer: ''
 			}
 		},
 		mounted() {
 			this.init()
-			this.showChart()
+			this.timer = setInterval(this.showChart, 3000);
 		},
 		methods: {
 			init() {
@@ -76,16 +77,15 @@
 					this.chartIndex = 1
 					this.text = '当前温度'
 				}
-				this.statisticInfo.chartOption.xAxis.data = this.chartInfo[this.chartIndex].timelist
-				this.statisticInfo.chartOption.series.data = this.chartInfo[this.chartIndex].datalist
 				this.statisticInfo.chartOption.xAxis.name = this.chartInfo[this.chartIndex].xname
 				this.statisticInfo.chartOption.yAxis.name = this.chartInfo[this.chartIndex].yname
 				this.statisticInfo.chartOption.title.text = this.chartInfo[this.chartIndex].text
 				this.statisticInfo.chartOption.yAxis.min = this.chartInfo[this.chartIndex].min
-				this.chartInfo[this.chartIndex].nowValue = this.chartInfo[this.chartIndex].datalist[this.chartInfo[this.chartIndex].datalist.length - 1]
-				this.$emit('ChartingReq', this.chartInfo[this.chartIndex].nowValue)
 			},
 			showChart() {
+				this.statisticInfo.chartOption.xAxis.data = this.timelist
+				this.statisticInfo.chartOption.series.data = this.datalist
+				this.chartInfo[this.chartIndex].nowValue = this.datalist[this.datalist.length - 1]
 				console.log('charts')
 				console.log(this.id)
 				var chartDom = document.getElementById(this.id)
