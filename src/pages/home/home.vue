@@ -65,10 +65,6 @@ export default {
   },
   methods: {
     onSubmit () {
-      this.$store.commit('increment')
-      // // this.$store.commit('Login', 'Hello', '')
-      // console.log(this.$store.state.count)
-      
       if (this.form.password && this.form.username) {
         // Todo : change url into ours. & do some simple test.
         if (this.form.userType === 'Administrator') {
@@ -96,24 +92,27 @@ export default {
       }
     },
     getAdminSigninRes (res) {
-      console.log(res.data)
+      // console.log(res.data)
     
       if (res.data.code === 200) {
         this.$router.push('/admin')
-      }
+        let url = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
+      } else {
+        alert('Login Failed !')
+      } 
     },
     getCustomerSigninRes (res) {
       console.log(res.data);
       
       if (res.data.code === 200) {
         this.$router.push('users')
+        let url = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
+      } else {
+        alert('Login Failed !')
       }
     }
-  },
-  mounted () {
-    console.log(this.$store.state.count)
-    this.$store.commit('increment')
-    console.log(this.$store.state.count)
   },
   computed: {
     counter () {

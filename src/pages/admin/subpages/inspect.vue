@@ -72,5 +72,10 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-
+  .el-divider--vertical {
+    position: absolute;
+    height: 100%;
+    left: 58%;
+    margin: 0;
+  }
 </style>
