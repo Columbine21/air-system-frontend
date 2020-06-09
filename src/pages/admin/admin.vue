@@ -4,15 +4,7 @@
       <el-avatar class="avater" style="position: absolute; top: 10px; left: 20px" :src="Manager.avaterUrl"></el-avatar>
       <div style="position: absolute; top: 27.5px; left: 80px; font-size: 15px">{{Manager.name}}</div>
       
-      <el-menu
-        default-active="settings"
-        class="el-menu-vertical-demo"
-        background-color="#545c64" 
-        text-color="#fff" 
-        active-text-color="#ffd04b"
-        @select="showChange"
-        style="margin-top: 60px"
-        >
+      <el-menu default-active="settings" class="el-menu-vertical-demo" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b" @select="showChange" style="margin-top: 60px">
         <el-menu-item index="settings">
           <i class="el-icon-setting"></i>
           <span slot="title">Setting</span>
@@ -151,16 +143,6 @@ export default {
       this.$router.push('/')
       
     },
-    // showRoomDetails (row) {
-    //   console.log(row.roomId)
-    //   // Todo : here to use the repondence info.
-    //   this.inspectInfo.InspectDetails = true
-    //   this.inspectInfo.form.roomId = row.roomId
-    //   // this.inspectInfo.form.record = 
-    // },
-    // HiddenDetails () {
-    //   this.inspectInfo.InspectDetails = false
-    // },
     showStatisticDetails (roomId, startDate, peroid) {
       // Todo : here to use the respondence data
       this.statisticInfo.showCharts = true
