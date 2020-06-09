@@ -25,8 +25,8 @@
             </el-radio-group>
         </el-form-item>
           
-          <el-button style="margin:0 20%; width: 60%;" type="primary" v-on:click="onSubmit('loginForm')">登录</el-button>
-          <el-button style="margin:5% 20%; width: 60%;" type="primary" v-on:click="onSubmit('signUpForm')">注册</el-button>
+          <el-button style="margin:0 20%; width: 60%;" type="primary" @click="onSubmit">登录</el-button>
+          <!-- <el-button style="margin:5% 20%; width: 60%;" type="primary" @click="onSubmit('signUpForm')">注册</el-button> -->
       </el-form>
     </el-card>
     <div>{{counter}}</div>
@@ -64,48 +64,56 @@ export default {
     }
   },
   methods: {
-    onSubmit (type) {
+    onSubmit () {
       this.$store.commit('increment')
-      this.$store.commit('Login', 'Hello', '')
-      console.log(this.$store.state.count)
-      if (type === 'loginForm') {
-        if (this.form.password && this.form.username) {
-          // Todo : change url into ours. & do some simple test.
-          axios.post('https://reqres.in/api/login', {
-            ...this.form
-          }).then(this.getSigninRes)
-        } else {
-          this.validity = false
-          this.message = 'User Name or Password can not be null'
+      // // this.$store.commit('Login', 'Hello', '')
+      // console.log(this.$store.state.count)
+      
+      if (this.form.password && this.form.username) {
+        // Todo : change url into ours. & do some simple test.
+        if (this.form.userType === 'Administrator') {
+          axios({
+            method: 'post',
+            url: '/login/admin',
+            data: {
+            'adminId': this.form.username,
+            'password': this.form.password
+            }
+          }).then(this.getAdminSigninRes)
+        } else if (this.form.userType === 'Traveler') {
+          axios({
+            method: 'post',
+            url: '/login/customer',
+            data: {
+            'roomNo': this.form.username,
+            'idNo': this.form.password
+            }
+          }).then(this.getCustomerSigninRes)
         }
       } else {
-        // Todo : change url into ours. & do some simple test.
-        axios.post('https://reqres.in/api/signup', {
-          ...this.form
-          }).then(this.getSignupRes)
+        this.validity = false
+        this.message = 'User Name or Password can not be null'
       }
     },
-    getSignupRes (res) {
-      // Todo : deal with the res, if succ, alert("创建成功"), else alert("创建失败")
-      console.log(res);
+    getAdminSigninRes (res) {
+      console.log(res.data)
+    
+      if (res.data.code === 200) {
+        this.$router.push('/admin')
+      }
     },
-    getSigninRes (res) {
-      // Todo : deal with the res, if succ, store the corresponding info & router, else alert("创建失败").
-      // {ret_code: ,
-      //  Manager: {
-      //    avaterUrl: 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png',
-      //    name: "Jason"
-      //  }
-      // }
-      // this.$store.commit('Login', 'Hello', 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
-      console.log(res);
+    getCustomerSigninRes (res) {
+      console.log(res.data);
+      
+      if (res.data.code === 200) {
+        this.$router.push('users')
+      }
     }
   },
   mounted () {
     console.log(this.$store.state.count)
     this.$store.commit('increment')
     console.log(this.$store.state.count)
-    // this.$store.commit('Login', 'Hello', 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
   },
   computed: {
     counter () {

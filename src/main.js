@@ -12,6 +12,7 @@ import 'styles/reset.css'
 import 'styles/border.css'
 import 'styles/iconfont.css'
 import store from './store'
+import axios from 'axios'
 
 // // src/plugins/vuetify.js
 // import Vuetify from 'vuetify'
@@ -23,6 +24,7 @@ Vue.prototype.$echarts = echarts
 Vue.use(ElementUI)
 Vue.use(Vuex)
 Vue.config.productionTip = false
+axios.defaults.baseURL = 'http://101.200.120.102:8080'
 
 /* eslint-disable no-new */
 new Vue({
