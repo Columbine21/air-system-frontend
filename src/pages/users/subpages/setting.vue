@@ -7,13 +7,16 @@
 			<div>当前状态&ensp; :&ensp; {{Settings.state}}</div>
 			<div style="margin-top: 5vh">
 				<span>温度</span>
-				<el-slider style="margin: 0 1vw" v-model="CentTemp" v-on:change="changeInfo" :step='14.29' show-stops :marks="marksTemp">
-				</el-slider>
+				<div style="margin-top: 3vh; text-align: center">
+					<el-input-number v-model="CentTemp" :min="SetTemp.min" :max="SetTemp.max" @change="changeInfo"/>
+				</div>
 			</div>
 			<div style="margin-top: 7vh">
 				<span>风速</span>
-				<el-slider style="margin: 0 1vw" v-model="CentWind" v-on:change="changeInfo" :step='50' show-stops :marks="marksWind">
-				</el-slider>
+				<div style="margin-top: 3vh;  width: 60%; text-align: center; margin-left: 15vh;">
+					<el-slider v-model="CentWind" v-on:change="changeInfo" :step='50' show-stops :marks="marksWind">
+					</el-slider>
+				</div>
 			</div>
 		</el-card>
 	</div>
@@ -36,15 +39,9 @@
 					50: 'medium',
 					100: 'high'
 				},
-				marksTemp: {
-					0: '18°C',
-					14.29: '19°C',
-					28.58: '20°C',
-					42.87: '21°C',
-					57.16: '22°C',
-					71.46: '23°C',
-					85.74: '24°C',
-					100: '25°C'
+				SetTemp: {
+					min: 18,
+					max: 24
 				},
 				CentWind: 0,
 				CentTemp: 0,
@@ -58,29 +55,34 @@
 		},
 		methods: {
 			init() {
-				this.Settings.temperature = this.marksTemp[this.CentTemp]
+				this.Settings.temperature = this.CentTemp
 				this.Settings.wind = this.marksWind[this.CentWind]
 				console.log(this.state)
 				this.Settings.state = this.state
 				this.$emit('SettingReq', this.Settings.wind, this.Settings.temperature, this.Settings.state)
 			},
-			changeInfo() {
+			changeInfo(currentValue, oldValue) {
 				if (this.state === '制冷') {
-					if (parseFloat(this.marksTemp[this.CentTemp]) > parseFloat(this.nowTemp)) {
-						console.log(parseInt(this.marksTemp[this.CentTemp]))
+					if (parseFloat(this.CentTemp) > parseFloat(this.nowTemp)) {
+						console.log(parseInt(this.CentTemp))
 						console.log(parseFloat(this.nowTemp))
-						this.CentTemp = this.CentTemp0
+						console.log('this.CEnt' + this.CentTemp)
+						console.log('current' + currentValue)
+						console.log('oldValue' + oldValue)
+						this.CentTemp = oldValue
+						currentValue = oldValue
+						console.log('this.CEnt' + this.CentTemp)
 						alert('温度设置失败')
 						return
 					}
 				} else {
-					if (this.marksTemp[this.CentTemp] < this.nowTemp) {
+					if (this.CentTemp < parseFloat(this.nowTemp)) {
 						this.CentTemp = this.CentTemp0
 						alert('温度设置失败2')
 						return
 					}
 				}
-				this.Settings.temperature = this.marksTemp[this.CentTemp]
+				this.Settings.temperature = this.CentTemp
 				this.Settings.wind = this.marksWind[this.CentWind]
 				this.$emit('SettingReq', this.Settings.wind, this.Settings.temperature, this.Settings.state)
 				this.CentTemp0 = this.CentTemp

@@ -45,20 +45,48 @@
           :slaveData="tableData"></admin-inspect>
         </div>
         <div v-show="showControl.selectStatistics">
-          <el-divider direction="vertical"></el-divider>
-          <el-col :span="12">
-            <statistic-form @StatisticReq="showStatisticDetails"></statistic-form>
-          </el-col>
-          <el-col :span="12" v-show="statisticInfo.showCharts">
-            <el-card style="margin:5vh 10%; width: 80%;">
+          <!-- <el-divider direction="vertical"></el-divider> -->
+          <!-- <el-col :span="12"> -->
+            <!-- <statistic-form @StatisticReq="sendStatisticReq"></statistic-form> -->
+          <!-- </el-col> -->
+          <!-- <el-col :span="12" v-show="statisticInfo.showCharts"> -->
+
+            <el-card style="margin:5% 10%; width: 80%; height: 90%">
               <div slot="header">
-                <span>Summary</span>
+                <span>房间报表记录</span>
+                <el-button style="float: right; padding: 3px 0" @click="statisticReq" type="text">查询</el-button>
+                <el-button style="float: right; padding: 3px 10px" @click="statisticClear" type="text">清除</el-button>
               </div>
-              <div>总计盈利&ensp; :</div>
-              <div style="margin-top: 3vh">计费标准&ensp; :</div>
-              <div id="statisticCharts" style="height: 300px; width: 280px; margin-left: 5%; margin-top: 3vh"></div>
+              <el-form ref="statisticInfo.form" :model="statisticInfo.form" label-width="80px" :rules="statisticInfo.rules">
+                <el-form-item label="房间号码" prop="roomId">
+                  <el-input v-model="statisticInfo.form.roomId" />
+                </el-form-item>
+                
+                <el-form-item label="统计范围" prop="peroid">
+                  <el-radio-group v-model="statisticInfo.form.peroid">
+                    <el-radio label="day" /> <el-radio label="week" /> <el-radio label="month" />
+                  </el-radio-group>
+                </el-form-item>
+              </el-form> 
+              <!-- <div v-show="statisticInfo.showDefault" style=""></div> -->
+              <div v-show="statisticInfo.showResult">
+                <el-divider></el-divider>
+                <div style="margin-top: 3vh">开机次数&ensp; :&ensp; {{statisticInfo.data.start_times}}</div>
+                <div style="margin-top: 3vh">关机次数&ensp; :&ensp; {{statisticInfo.data.end_times}}</div>
+                <el-table :data="statisticInfo.data.contents" height="300" style="width: 100%; margin-top: 3vh" stripe border>
+                  <el-table-column prop="start_time" label="开始时间" width="160" /> 
+                  <el-table-column prop="end_time" label="结束时间" width="160" /> 
+                  <el-table-column prop="start_room_temperature" label="起始温度" width="120" />
+                  <el-table-column prop="end_room_temperature" label="终止温度" width="120" /> 
+                  <el-table-column prop="wind_consumption" label="消耗风量"  width="120"/>
+                  <el-table-column prop="price" label="本次花费" />
+                </el-table>
+                <!-- <div style="text-align:center"> -->
+                <div style="margin-top: 3vh">总费用&ensp; :&ensp; {{statisticInfo.data.total_price}}</div>
+              <!-- </div>  -->
+            </div>
             </el-card>
-          </el-col>
+          <!-- </el-col> -->
         </div>
       </el-main>
     </el-container>
@@ -70,6 +98,7 @@ import echarts from 'echarts'
 import adminSettings from '@/pages/admin/subpages/setting'
 import adminInspect from '@/pages/admin/subpages/inspect'
 import statisticForm from '@/pages/admin/subpages/statisticForm'
+import axios from 'axios'
 export default {
   name: 'Admin',
   components: {
@@ -99,22 +128,21 @@ export default {
           }
       ],
       statisticInfo: {
-        showCharts: false,
-        chartOption: {
-          title: {
-            text: '一周气温变化'
-          },
-          xAxis: {
-              type: 'category',
-              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-          },
-          yAxis: {
-              type: 'value'
-          },
-          series: [{
-              data: [820, 932, 901, 934, 1290, 1330, 1320],
-              type: 'line'
-          }]
+        showResult: false,
+        rules: {
+          roomId: [
+            { required: true, message: '请输入房间号码', trigger: 'blur' },
+          ],
+          peroid: [
+            { required: true, message: '请输入起始日期', trigger: 'change' }
+          ]
+        },
+        form: {
+          roomId: '',
+          peroid: ''
+        },
+        data: {
+          
         }
       }
     }
@@ -143,15 +171,31 @@ export default {
       this.$router.push('/')
       
     },
-    showStatisticDetails (roomId, startDate, peroid) {
+    statisticReq () {
+      // axios.get('/report', { params: { 'roomNo': roomId, 'report_category': peroid}}).then(this.showStatisticDetails)
+      // console.log(roomId, peroid)
+      axios({
+            method: 'post',
+            url: '/report',
+            data: {
+            'roomNo': this.statisticInfo.form.roomId,
+            'report_category': this.statisticInfo.form.peroid
+            }
+          }).then(this.showStatisticDetails)
+      // this.statisticInfo.roomId = roomId
+    },
+    showStatisticDetails (res) {
       // Todo : here to use the respondence data
-      this.statisticInfo.showCharts = true
-      alert(roomId)
-      var chartDom = document.getElementById("statisticCharts")
-      
-      var myChart = echarts.init(chartDom)
-      // Use the axios response to change chartOption 
-      myChart.setOption(this.statisticInfo.chartOption, true)
+      if (res.data.code === 200) {
+        // this.statisticInfo.showCharts = true
+        this.statisticInfo.showResult = true
+        this.statisticInfo.data = res.data.data
+      } else {
+        alert("Request failed.")
+      }
+    },
+    statisticClear () {
+      this.statisticInfo.showResult = false
     }
   },
   computed: {

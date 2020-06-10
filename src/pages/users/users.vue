@@ -30,6 +30,7 @@
 				<sensor @SensorReq='returnSensor' :state='Settings.state' :setTemp='Settings.temperature' :setWind='Settings.wind'
 				 :nowTemp='RoomInfo.roomtemp'></sensor>
 				<div v-show="show_info">
+					<div>{{test}}</div>
 					<display-panal :roomId='RoomInfo.roomId' :temp='RoomInfo.roomtemp' :wind='Settings.wind' :money='RoomInfo.money'
 					 :state='Settings.state' :onoff='RoomInfo.onoff' :setTemp='Settings.temperature' :time='RoomInfo.time'></display-panal>
 				</div>
@@ -204,6 +205,9 @@
 		computed: {
 			Customer() {
 				return this.$store.state.UserInfo
+			},
+			test () {
+			  return this.$store.state.defaultName
 			}
 		}
 	}
