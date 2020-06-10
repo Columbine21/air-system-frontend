@@ -6,7 +6,7 @@
         <div slot="header">
           <span>系统设置</span>
           <el-button style="float: right; padding: 3px 0" @click="clear" type="text">撤销</el-button>
-          <el-button style="float: right; padding: 3px 10px" type="text">应用</el-button>
+          <el-button style="float: right; padding: 3px 10px" @click="submit" type="text">应用</el-button>
         </div>
         <div style="margin-top: 4px; font-size: 14px">系统时间</div>
         <el-date-picker
@@ -63,7 +63,7 @@
 </template>
 
 <script>
-
+import axios from 'axios'
 export default {
   name: 'adminSettings',
   data () {
@@ -84,6 +84,23 @@ export default {
       this.SettingForm.systemMode = this.MasterState.Basic.Mode
       this.SettingForm.temperature = this.MasterState.Settings.SetTemperature
       this.SettingForm.refreshFrequence = this.MasterState.Settings.SetFrequence
+    },
+    submit () {
+      // axios({
+      //       method: 'post',
+      //       // url: '/login/admin',
+      //       data: {
+      //       // 'adminId': this.form.username,
+      //       // 'password': this.form.password
+      //       }
+      //     }).then(this.getSetModeRes)
+    },
+    getSetModeRes () {
+      if (res.data.code === 200) {
+        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
+      } else {
+        alert('Set Failed !')
+      } 
     }
   },
   computed: {

@@ -1,6 +1,6 @@
 <template>
   <el-container style="height: 100vh; border: 1px solid #eee">
-    <el-aside width="18vw" style="background-color: rgb(84, 92, 100)">
+    <el-aside width="15vw" style="background-color: rgb(84, 92, 100)">
       <el-avatar class="avater" style="position: absolute; top: 10px; left: 20px" :src="Manager.avaterUrl"></el-avatar>
       <div style="position: absolute; top: 27.5px; left: 80px; font-size: 15px">{{Manager.name}}</div>
       
@@ -87,15 +87,15 @@ export default {
       tableData: [{
             roomId: '2-231',
             temperature: '18',
-            mode: 'high'
+            mode: '高'
           }, {
             roomId: '3-304',
             temperature: '20',
-            mode: 'high'
+            mode: '高'
           }, {
             roomId: '1-119',
             temperature: '19',
-            mode: 'medium'
+            mode: '中'
           }
       ],
       statisticInfo: {

@@ -39,13 +39,12 @@ export default new Vuex.Store({
       state.UserInfo.name = defaultName
       state.UserInfo.avaterUrl = defaultUrl
     },
-    SetMasterBasic (state, Poweron, SystemTime) {
-      state.MasterState.Basic.Poweron = Poweron
-      state.MasterState.Basic.SystemTime = SystemTime
-    },
-    SetMasterSetttings (state, SetTemperature, SetMode) {
-      state.MasterState.Settings.SetTemperature = SetTemperature
-      state.MasterState.Settings.SetMode = SetMode
+    SetMasterState (state, MasterInfo) {
+      state.MasterState.Basic.Poweron = MasterInfo.Poweron
+      state.MasterState.Basic.Mode = MasterInfo.Mode
+      state.MasterState.Basic.SystemTime = MasterInfo.SystemTime
+      state.MasterState.Settings.SetTemperature = MasterInfo.SetTemperature
+      state.MasterState.Settings.SetFrequence = MasterInfo.SetFrequence
     }
   }
 })
