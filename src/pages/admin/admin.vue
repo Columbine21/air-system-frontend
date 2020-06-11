@@ -187,7 +187,7 @@ export default {
     initLogData (res) {
       if (res.data.code === 200) {
         this.HistoryData = res.data.data
-        console.log(this.HistoryData);
+        // console.log(this.HistoryData);
       } else {
         alert(res.data.msg + ' 请重新登陆！')
         this.handleLogout()
@@ -203,7 +203,6 @@ export default {
     }
   },
   mounted () {
-    // console.log(this.Manager)
     axios.get('/master/log', { headers: { 'Authorization': this.Manager.token}}).then(this.initLogData)
   }
 }

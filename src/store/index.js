@@ -44,7 +44,7 @@ export default new Vuex.Store({
 			Temperature: defaultSlaveTemp,
 			TotalMoney: defaultTotalMoney,
 			UseTime: defaultUseTime,
-			ASstate: defaultASstate, // 送风 待机 关机
+			ASstate: defaultASstate, // 送风 等待送风 待机 关机
 			State: defaultState // 制冷 制热
 		},
 		Settings: {
@@ -67,7 +67,7 @@ export default new Vuex.Store({
     SetMasterState (state, MasterInfo) {
       state.MasterState.Basic.Poweron = MasterInfo.Poweron
       state.MasterState.Basic.Mode = MasterInfo.Mode
-      state.MasterState.Basic.SystemTime = MasterInfo.SystemTime
+    //   state.MasterState.Basic.SystemTime = MasterInfo.SystemTime
       state.MasterState.Settings.SetTemperature = MasterInfo.SetTemperature
       state.MasterState.Settings.SetFrequence = MasterInfo.SetFrequence
     },
@@ -90,6 +90,9 @@ export default new Vuex.Store({
 	},
 	UpdateSlaveTemp(state, temp) {
 	  state.SlaveState.Basic.Temperature = temp
+	},
+	UpdateSlaveTotalMoney(state, money) {
+	  state.SlaveState.Basic.TotalMoney = money
 	}
   }
 })

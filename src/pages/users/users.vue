@@ -37,7 +37,7 @@
 				</div>
 
 				<div v-show="show_money">
-					<charts id='moneyCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.templist'></charts>
+					<charts id='moneyCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.moneylist'></charts>
 				</div>
 
 				<div v-show="show_temp">
@@ -81,7 +81,8 @@
 				Timer: {
 					timer0: '',
 					timer1: ''
-				}
+				},
+				retry: 0
 			}
 		},
 		mounted() {
@@ -122,6 +123,22 @@
 				this.$store.commit('UpdateSlaveTime', 10)
 				this.RoomInfo.timelist.push(this.SlaveBasic.UseTime)
 				this.RoomInfo.templist.push(this.SlaveBasic.Temperature)
+				this.getMoney()
+				this.RoomInfo.moneylist.push(this.SlaveBasic.TotalMoney)
+			},
+			getMoney() {
+				axios({
+					method: 'get',
+					url: 'http://101.200.120.102:8080/slave/bill', 
+					data: {},
+					headers: {
+						'Authorization': this.Customer.token
+					}
+				}).then(res => {
+					console.log('计费请求：')
+					console.log(res.data)
+					this.$store.commit('UpdateSlaveTotalMoney', res.data.data.cost.toFixed(2))
+				})
 			},
 			sendOnOff() {
 				if (this.machine === false) {
@@ -134,10 +151,10 @@
 							'Authorization': this.Customer.token
 						}
 					}).then(res => {
+						console.log('关闭请求：')
 						console.log(res.data)
 					})
 				} else {
-					this.$store.commit('UpdateASstate', '待机')
 					axios({
 						method: 'get',
 						url: 'http://101.200.120.102:8080/slave/start', // 开启请求
@@ -146,7 +163,14 @@
 							'Authorization': this.Customer.token
 						}
 					}).then(res => {
+						console.log('开机请求：')
 						console.log(res.data)
+						if (res.data.code === 200) {
+							this.$store.commit('UpdateASstate', '待机')
+						} else {
+							this.machine = false
+							alert(res.data.msg)
+						}
 					})
 				}
 			}

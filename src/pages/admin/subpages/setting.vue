@@ -5,8 +5,6 @@
       <el-card style="margin-left: 3.5vw; margin-top: 6vh; width: 80%;">
         <div slot="header">
           <span>系统设置</span>
-          <el-button style="float: right; padding: 3px 0" @click="clear" type="text">撤销</el-button>
-          <el-button style="float: right; padding: 3px 10px" @click="submit" type="text">应用</el-button>
         </div>
         <div style="margin-top: 4px; font-size: 14px">系统时间</div>
         <el-date-picker
@@ -22,10 +20,44 @@
         <div>
           <div style="margin-top: 4px; font-size: 14px">系统开关</div>
           <el-switch style="margin: 5% 0 0 36%"
-            v-model="SettingForm.powerOn"
+            v-model="MasterState.Basic.Poweron"
+            @change="SwitchReq"
             active-text="开启"
             inactive-text="关闭">
           </el-switch>
+        </div>
+        <el-collapse accordion style="margin-top:3vh">
+          <el-collapse-item title="当前主控状态">
+            <div>
+              <div style="margin-top: 4px; font-size: 14px">系统模式</div>
+              <el-switch style="margin: 5% 0 0 36%"
+                v-model="MasterState.Basic.Mode"
+                disabled
+                active-text="制冷"
+                inactive-text="制热">
+              </el-switch>
+            </div>
+            <div>温度控制</div> 
+            <div style="margin-top: 3vh; text-align: center">
+              
+              <el-input-number disabled v-model="MasterState.Settings.SetTemperature" :min="TemperatureControlerMin" :max="TemperatureControlerMax"/>
+            </div>
+            <div style="margin-top: 3vh">
+              <div>刷新频率</div>
+              <el-input  disabled style="margin: 1vh 20%; width: 60%" placeholder="刷新频率(单位s)" v-model="MasterState.Settings.SetFrequence" />
+            </div>
+            <el-button type="primary" style="width: 40%;margin-top:2vh; margin-left:30%" @click="ShowModify">修改主控详细设置</el-button>
+          </el-collapse-item>
+        </el-collapse>
+        
+      </el-card>
+    </el-col>
+    <el-col :span="12">
+      <el-card style="margin-left: 3.5vw; margin-top: 6vh; width: 80%;" v-show="showModifySection">
+        <div slot="header">
+          <span>更细系统设置</span>
+          <el-button style="float: right; padding: 3px 0" @click="clear" type="text">撤销</el-button>
+          <el-button style="float: right; padding: 3px 10px" @click="submit" type="text">应用</el-button>
         </div>
 
         <div>
@@ -47,18 +79,6 @@
         </div>
       </el-card>
     </el-col>
-    <el-col :span="12">
-      <el-card style="margin-left: 3.5vw; margin-top: 6vh; width: 80%;">
-        <div slot="header">
-          <span>中央空调状态</span>
-        </div>
-        <div>当前状态&ensp; :&ensp; {{ShowPower}}</div>
-        <div style="margin-top: 3vh">当前月份&ensp; :&ensp; {{Month}}, 推荐模式&ensp; : &ensp;{{RecommendMode}}</div>
-        <div style="margin-top: 3vh">当前模式&ensp; :&ensp; {{ShowMode}} &ensp;</div>
-        <div style="margin-top: 3vh">设定温度&ensp; :&ensp; {{MasterState.Settings.SetTemperature}}</div>
-        <div style="margin-top: 3vh">刷新频率&ensp; :&ensp; {{MasterState.Settings.SetFrequence}}</div>
-      </el-card>
-    </el-col>
   </div>
 </template>
 
@@ -68,8 +88,9 @@ export default {
   name: 'adminSettings',
   data () {
     return {
+      showModifySection: false,
       SettingForm: {
-        systemTime: null,
+        // systemTime: null,
         powerOn: null,
         systemMode: null,
         temperature: null,
@@ -78,50 +99,100 @@ export default {
     }
   },
   methods: {
-    clear () {
-      this.SettingForm.systemTime = this.MasterState.Basic.SystemTime
+    ShowModify () {
+      this.showModifySection = true
       this.SettingForm.powerOn = this.MasterState.Basic.Poweron
       this.SettingForm.systemMode = this.MasterState.Basic.Mode
       this.SettingForm.temperature = this.MasterState.Settings.SetTemperature
       this.SettingForm.refreshFrequence = this.MasterState.Settings.SetFrequence
     },
-    submit () {
-      // axios({
-      //       method: 'post',
-      //       // url: '/login/admin',
-      //       data: {
-      //       // 'adminId': this.form.username,
-      //       // 'password': this.form.password
-      //       }
-      //     }).then(this.getSetModeRes)
+    clear () {
+      this.showModifySection = false
+
+      this.SettingForm.systemMode = this.MasterState.Basic.Mode
+      this.SettingForm.temperature = this.MasterState.Settings.SetTemperature
+      this.SettingForm.refreshFrequence = this.MasterState.Settings.SetFrequence
     },
-    getSetModeRes () {
+    submit () {
+      let tmpMode = this.SettingForm.systemMode === true ? 'COOL' : 'HEAT'
+      console.log(tmpMode, this.SettingForm.refreshFrequence, this.SettingForm.temperature)
+      axios({
+            method: 'post',
+            url: '/master/set',
+            headers: { 
+              'Authorization': this.Manager.token
+            },
+            data: {
+              'mode': tmpMode,
+              'freq': this.SettingForm.refreshFrequence,
+              't': this.SettingForm.temperature
+            }
+          }).then(this.getSetModeRes)
+      this.showModifySection = false
+    },
+    getSetModeRes (res) {
+      console.log(res.data);
       if (res.data.code === 200) {
-        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
+        this.$store.commit('SetMasterState',{
+          'Poweron': this.MasterState.Basic.Poweron,
+          'Mode': this.SettingForm.systemMode, 
+          'SetTemperature': this.SettingForm.temperature,
+          'SetFrequence': this.SettingForm.refreshFrequence
+        })
+        // this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
       } else {
         alert('Set Failed !')
       } 
+    },
+    initStatus (res) {
+      let statuson = res.data.data.state === "CLOSE" ? false : true
+      let statusmode = res.data.data.mode === "COOL" ? true : false
+      let temperature = res.data.data.ct
+      let frequence = res.data.data.interval_ms
+      this.$store.commit('SetMasterState', {
+        'Poweron': statuson,
+        'Mode': statusmode,
+        'SetTemperature': temperature,
+        'SetFrequence': frequence
+        })
+    },
+    SwitchReq () {
+      if (this.MasterState.Basic.Poweron === true) {
+        axios({
+          method: 'get',
+          url: '/master/start',
+          headers: {'Authorization': this.Manager.token}
+        }).then(this.getSwitchRes)
+      } else {
+        axios({
+          method: 'get',
+          url: '/master/close',
+          headers: {'Authorization': this.Manager.token}
+        }).then(this.getSwitchRes)
+      }
+    },
+    getSwitchRes (res) {
+      console.log(res.data.data)
+      if(res.data.code === 200) {
+        if (this.MasterState.Basic.Poweron === true) {
+          
+          this.$alert('开启中央空调成功', {
+          confirmButtonText: '确定'
+          })
+        } else {
+          this.$alert('关闭中央空调成功', {
+          confirmButtonText: '确定'
+          })
+        }
+      }
     }
   },
   computed: {
+    Manager () {
+      return this.$store.state.UserInfo
+    },
     MasterState () {
       return this.$store.state.MasterState
-    },
-    Month () {
-      return Number(this.MasterState.Basic.SystemTime.split('-')[1])
-    },
-    RecommendMode () {
-      if (this.Month >= 5 && this.Month <= 10) {
-        return "制冷模式"
-      } else {
-        return "制热模式"
-      }
-    },
-    ShowPower () {
-      return this.MasterState.Basic.Poweron === false ? '待机状态' : '开启状态'
-    },
-    ShowMode () {
-      return this.MasterState.Basic.Mode === false ? '制热模式' : '制冷模式'
     },
     TemperatureControlerMin () {
       return this.SettingForm.systemMode === false ? 24 : 18
@@ -131,7 +202,7 @@ export default {
     }
   },
   mounted () {
-    this.clear()
+    axios.get('/master/status', { headers: { 'Authorization': this.Manager.token}}).then(this.initStatus)
   }
 }
 </script>

@@ -45,7 +45,7 @@ export default {
       form: {
         username: '',
         password: '',
-        userType: ''
+        userType: 'Traveler'
       },
       isadmin: false,
       // 表单验证，需要在 el-form-item 元素中增加 prop 属性
@@ -93,7 +93,6 @@ export default {
     },
     getAdminSigninRes (res) {
       if (res.data.code === 200) {
-        console.log(res.data.data.token)
         this.$router.push('/admin')
         let url = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
         this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url, token: res.data.data.token})
@@ -102,8 +101,6 @@ export default {
       } 
     },
     getCustomerSigninRes (res) {
-      console.log(res.data);
-      
       if (res.data.code === 200) {
         this.$router.push('users')
         let url = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'

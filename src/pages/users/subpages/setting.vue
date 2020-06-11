@@ -123,21 +123,20 @@
 			sendSettings() {
 				this.time0 = 0
 				this.time1 = 0
-				/* axios({
-					method: 'put',
-					url: 'localhost:8080/slave/settings', // 发送设置参数
+				axios({
+					method: 'post',
+					url: 'http://101.200.120.102:8080/slave/set', // 发送设置参数
 					data: {
-						setTemp: this.Settings.temperature,
-						setWind: this.Settings.wind
+						t: this.SlaveSettings.SetTemperature,
+						wind: this.marksWind[this.SlaveSettings.SetWind]
 					},
 					headers: {
-						'Authorization': 'Bearer ' + this.Customer.token
+						'Authorization': this.Customer.token
 					}
-				}).then(this.getSendSettingsRes) */
-			},
-			getSendSettingsRes(res) {
-				// todo
-				console.log(res)
+				}).then(res => {
+					console.log('设置参数发送：')
+					console.log(res.data)
+				})
 			},
 			reload() {
 				this.view = false
@@ -156,6 +155,7 @@
 				}).then(this.getDefaultTempRes)
 			},
 			getDefaultTempRes(res) {
+				console.log('获取主机温度请求：')
 				if (res.data.code !== 200) {
 					console.log('请求主机设定温度失败')
 					alert('请求主机设定温度失败')
