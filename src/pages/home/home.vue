@@ -93,9 +93,10 @@ export default {
     },
     getAdminSigninRes (res) {
       if (res.data.code === 200) {
+        console.log(res.data.data.token)
         this.$router.push('/admin')
         let url = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
-        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
+        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url, token: res.data.data.token})
       } else {
         alert('Login Failed !')
       } 
@@ -106,7 +107,7 @@ export default {
       if (res.data.code === 200) {
         this.$router.push('users')
         let url = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
-        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
+        this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url, token: res.data.data.token, roomNo: res.data.data.roomNo})
       } else {
         alert('Login Failed !')
       }

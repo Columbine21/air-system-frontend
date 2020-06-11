@@ -42,7 +42,7 @@
         </div>
         <div v-show="showControl.selectInspect">
           <admin-inspect 
-          :slaveData="tableData"></admin-inspect>
+          :HistoryData="HistoryData"></admin-inspect>
         </div>
         <div v-show="showControl.selectStatistics">
           <!-- <el-divider direction="vertical"></el-divider> -->
@@ -113,20 +113,7 @@ export default {
         selectInspect: false,
         selectStatistics: false
       },
-      tableData: [{
-            roomId: '2-231',
-            temperature: '18',
-            mode: '高'
-          }, {
-            roomId: '3-304',
-            temperature: '20',
-            mode: '高'
-          }, {
-            roomId: '1-119',
-            temperature: '19',
-            mode: '中'
-          }
-      ],
+      HistoryData: null,
       statisticInfo: {
         showResult: false,
         rules: {
@@ -150,7 +137,7 @@ export default {
   methods: {
     showChange(key, keyPath) {
       // deal with aside bar event. (change which to show)
-      console.log(key + '...' + keyPath);
+      // console.log(key + '...' + keyPath);
       if (key == 'settings') {
         this.showControl.selectSettings = true,
         this.showControl.selectInspect = false,
@@ -196,6 +183,15 @@ export default {
     },
     statisticClear () {
       this.statisticInfo.showResult = false
+    },
+    initLogData (res) {
+      if (res.data.code === 200) {
+        this.HistoryData = res.data.data
+        console.log(this.HistoryData);
+      } else {
+        alert(res.data.msg + ' 请重新登陆！')
+        this.handleLogout()
+      }
     }
   },
   computed: {
@@ -207,10 +203,8 @@ export default {
     }
   },
   mounted () {
-    // 1. use store thing to change the this.Manager.
-    // 2. axios request : time / open / state.
-    // 3. store thing into store.
-    // 4. axios request : slave usage list.  result should contain tableData & inspectInfo.
+    // console.log(this.Manager)
+    axios.get('/master/log', { headers: { 'Authorization': this.Manager.token}}).then(this.initLogData)
   }
 }
 </script>

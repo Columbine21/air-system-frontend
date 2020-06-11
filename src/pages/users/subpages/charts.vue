@@ -3,7 +3,7 @@
 		<el-divider direction="vertical"></el-divider>
 		<el-card style="margin:5vh 10%; width: 80%;">
 			<div slot="header">
-				<span>房间：{{roomId}}</span>
+				<span>房间：{{SlaveBasic.RoomNo}}</span>
 			</div>
 			<div>{{text}}&ensp; :&ensp; &ensp; {{chartInfo[chartIndex].nowValue}}&ensp; {{chartInfo[chartIndex].unit}}</div>
 			<div style="height: 300px; width: 700px; margin-left: 15%; margin-top: 3vh" :id='id'></div>
@@ -15,7 +15,7 @@
 	import echarts from 'echarts'
 	export default {
 		name: 'charts',
-		props: ['roomId', 'id', 'state', 'timelist', 'datalist'],
+		props: ['id', 'timelist', 'datalist'],
 		data() {
 			return {
 				statisticInfo: {
@@ -86,8 +86,6 @@
 				this.statisticInfo.chartOption.xAxis.data = this.timelist
 				this.statisticInfo.chartOption.series.data = this.datalist
 				this.chartInfo[this.chartIndex].nowValue = this.datalist[this.datalist.length - 1]
-				console.log('charts')
-				console.log(this.id)
 				var chartDom = document.getElementById(this.id)
 				var myChart = echarts.init(chartDom)
 				myChart.setOption(this.statisticInfo.chartOption, true)
@@ -95,6 +93,21 @@
 			getId() {
 				return this.id
 			}
+		},
+		computed: {
+			Customer() {
+				return this.$store.state.UserInfo
+			},
+			SlaveBasic() {
+				return this.$store.state.SlaveState.Basic
+			},
+			SlaveSettings() {
+				return this.$store.state.SlaveState.Settings
+			}
+		},
+		beforeDestroy() {
+			clearInterval(this.timer);
+			this.timer = null;
 		}
 	}
 </script>

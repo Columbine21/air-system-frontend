@@ -4,11 +4,11 @@
 			<div slot="header">
 				<span>空调控制</span>
 			</div>
-			<div>当前状态&ensp; :&ensp; {{Settings.state}}</div>
+			<div>当前状态&ensp; :&ensp; {{SlaveBasic.State}}</div>
 			<div style="margin-top: 5vh">
 				<span>温度</span>
 				<div style="margin-top: 3vh; text-align: center">
-					<el-input-number v-model="CentTemp" :min="SetTemp.min" :max="SetTemp.max" @change="changeInfo"/>
+					<el-input-number v-if='view' v-model="CentTemp" :min="SetTemp.min" :max="SetTemp.max" @change="changeInfo" />
 				</div>
 			</div>
 			<div style="margin-top: 7vh">
@@ -26,14 +26,8 @@
 	import axios from 'axios'
 	export default {
 		name: 'setting',
-		props: ['nowTemp', 'state', 'token'],
 		data() {
 			return {
-				Settings: {
-					wind: 'low',
-					temperature: '26°C',
-					state: '制冷'
-				},
 				marksWind: {
 					0: 'low',
 					50: 'medium',
@@ -41,64 +35,95 @@
 				},
 				SetTemp: {
 					min: 18,
-					max: 24
+					max: 25
 				},
 				CentWind: 0,
 				CentTemp: 0,
-				CentTemp0: 0,
 				time0: 0,
-				time1: 0
+				time1: 0,
+				view: true,
+				timer: ''
 			}
 		},
 		mounted() {
 			this.init()
 		},
+		computed: {
+			Customer() {
+				return this.$store.state.UserInfo
+			},
+			SlaveBasic() {
+				return this.$store.state.SlaveState.Basic
+			},
+			SlaveSettings() {
+				return this.$store.state.SlaveState.Settings
+			},
+			MasterSettings() {
+				return this.$store.state.MasterState.Settings
+			}
+		},
 		methods: {
 			init() {
-				this.Settings.temperature = this.CentTemp
-				this.Settings.wind = this.marksWind[this.CentWind]
-				console.log(this.state)
-				this.Settings.state = this.state
-				this.$emit('SettingReq', this.Settings.wind, this.Settings.temperature, this.Settings.state)
+				// this.getDefaultTemp()
+				this.CentTemp = this.MasterSettings.SetTemperature
+				this.CentWind = this.SlaveSettings.SetWind
+				if (this.SlaveBasic.State === '制热') {
+					this.SetTemp.min = 25
+					this.SetTemp.max = 30
+				}
 			},
 			changeInfo(currentValue, oldValue) {
-				if (this.state === '制冷') {
-					if (parseFloat(this.CentTemp) > parseFloat(this.nowTemp)) {
-						console.log(parseInt(this.CentTemp))
-						console.log(parseFloat(this.nowTemp))
-						console.log('this.CEnt' + this.CentTemp)
-						console.log('current' + currentValue)
-						console.log('oldValue' + oldValue)
+				// this.getDefaultTemp()
+				if (this.SlaveBasic.State === '制冷') {
+					if (this.CentTemp > parseFloat(this.SlaveBasic.Temperature) || this.CentTemp < this.MasterSettings.SetTemperature) {
+						if (parseFloat(this.CentTemp) > parseFloat(this.SlaveBasic.Temperature)) {
+							alert('温度设置失败：设定温度高于室温')
+						} else {
+							alert('温度设置失败：设定温度低于主机温度')
+						}
 						this.CentTemp = oldValue
-						currentValue = oldValue
-						console.log('this.CEnt' + this.CentTemp)
-						alert('温度设置失败')
+						console.log('nowTemp:' + this.SlaveBasic.Temperature)
+						console.log('setTemp:' + currentValue)
+						console.log('masterTemp:' + this.MasterSettings.SetTemperature)
+						this.reload()
 						return
 					}
 				} else {
-					if (this.CentTemp < parseFloat(this.nowTemp)) {
-						this.CentTemp = this.CentTemp0
-						alert('温度设置失败2')
+					if (this.CentTemp < parseFloat(this.SlaveBasic.Temperature) || this.CentTemp > this.MasterSettings.SetTemperature) {
+						this.CentTemp = oldValue
+						if (this.CentTemp < parseFloat(this.SlaveBasic.Temperature)) {
+							alert('温度设置失败：设定温度低于室温')
+						} else {
+							alert('温度设置失败：设定温度高于主机温度')
+						}
+						console.log('nowTemp:' + this.SlaveBasic.Temperature)
+						console.log('setTemp:' + currentValue)
+						console.log('masterTemp:' + this.MasterSettings.SetTemperature)
+						this.reload()
 						return
 					}
 				}
-				this.Settings.temperature = this.CentTemp
-				this.Settings.wind = this.marksWind[this.CentWind]
-				this.$emit('SettingReq', this.Settings.wind, this.Settings.temperature, this.Settings.state)
-				this.CentTemp0 = this.CentTemp
+				this.$store.commit('UpdateSlaveSettings', {
+					Temp: this.CentTemp,
+					Wind: this.CentWind
+				})
 				if (this.time0 === 0) {
 					this.time0 = new Date().getMilliseconds()
+					this.timer = setTimeout(this.sendSettings, 1000)
 				} else {
 					this.time1 = new Date().getMilliseconds()
 					if (this.time1 - this.time0 < 1000) {
-						// this.sendSettings()
+						this.sendSettings()
+						clearTimeout(this.timer)
 					}
 					this.time0 = 0
 					this.time1 = 0
 				}
 			},
 			sendSettings() {
-				axios({
+				this.time0 = 0
+				this.time1 = 0
+				/* axios({
 					method: 'put',
 					url: 'localhost:8080/slave/settings', // 发送设置参数
 					data: {
@@ -106,13 +131,46 @@
 						setWind: this.Settings.wind
 					},
 					headers: {
-						'Authorization': 'Bearer ' + this.token
+						'Authorization': 'Bearer ' + this.Customer.token
 					}
-				}).then(this.getSendSettingsRes)
+				}).then(this.getSendSettingsRes) */
 			},
 			getSendSettingsRes(res) {
 				// todo
 				console.log(res)
+			},
+			reload() {
+				this.view = false
+				this.$nextTick(function() {
+					this.view = true
+				})
+			},
+			getDefaultTemp() { // 获取主机温度
+				axios({
+					method: 'get',
+					url: 'http://101.200.120.102:8080/slave/default',
+					data: {},
+					headers: {
+						'Authorization': this.Customer.token
+					}
+				}).then(this.getDefaultTempRes)
+			},
+			getDefaultTempRes(res) {
+				if (res.data.code !== 200) {
+					console.log('请求主机设定温度失败')
+					alert('请求主机设定温度失败')
+				} else {
+					var mode = ''
+					if (res.data.data.mode === 'COOL') {
+						mode = '制冷'
+					} else {
+						mode = '制热'
+					}
+					this.$store.commit('UpdateMasterState', {
+						Temp: res.data.data.t,
+						Mode: mode
+					})
+				}
 			}
 		}
 	}

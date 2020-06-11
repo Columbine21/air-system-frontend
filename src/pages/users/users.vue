@@ -27,28 +27,24 @@
 			</el-header>
 
 			<el-main>
-				<sensor @SensorReq='returnSensor' :state='Settings.state' :setTemp='Settings.temperature' :setWind='Settings.wind'
-				 :nowTemp='RoomInfo.roomtemp'></sensor>
+				<sensor></sensor>
 				<div v-show="show_info">
-					<div>{{test}}</div>
-					<display-panal :roomId='RoomInfo.roomId' :temp='RoomInfo.roomtemp' :wind='Settings.wind' :money='RoomInfo.money'
-					 :state='Settings.state' :onoff='RoomInfo.onoff' :setTemp='Settings.temperature' :time='RoomInfo.time'></display-panal>
+					<display-panal></display-panal>
 				</div>
 
 				<div v-show="show_setting">
-					<setting @SettingReq="returnSettingInfo" :nowTemp='this.RoomInfo.roomtemp' :state='this.Settings.state' :token='this.RoomInfo.token'></setting>
+					<setting></setting>
 				</div>
 
 				<div v-show="show_money">
-					<charts :roomId='RoomInfo.roomId' id='moneyCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.templist'></charts>
+					<charts id='moneyCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.templist'></charts>
 				</div>
 
 				<div v-show="show_temp">
-					<charts :roomId='RoomInfo.roomId' id='tempCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.templist'></charts>
+					<charts id='tempCharts' :timelist='this.RoomInfo.timelist' :datalist='this.RoomInfo.templist'></charts>
 				</div>
 			</el-main>
 		</el-container>
-
 	</el-container>
 
 </template>
@@ -75,20 +71,9 @@
 				show_setting: true,
 				show_money: false,
 				show_temp: false,
-				machine: true,
-				Settings: {
-					wind: 0,
-					temperature: 0,
-					state: '制冷'
-				},
+				machine: false,
 				RoomInfo: {
-					money: 0,
-					roomtemp: 30,
-					roomId: '101',
 					idNo: '101id',
-					onoff: '开',
-					time: 0,
-					token: '',
 					timelist: [],
 					templist: [],
 					moneylist: []
@@ -96,21 +81,18 @@
 				Timer: {
 					timer0: '',
 					timer1: ''
-				},
-				sendFrq: 1000
+				}
 			}
 		},
 		mounted() {
 			this.Timer.timer0 = setInterval(this.getlist, 10000);
-			this.Timer.timer0 = setInterval(this.sendTemp, this.sendFrq);
 			this.init()
 		},
 		methods: {
 			init() {
 				this.RoomInfo.timelist.push(0)
-				this.RoomInfo.templist.push(this.RoomInfo.roomtemp)
+				this.RoomInfo.templist.push(this.SlaveBasic.Temperature)
 				this.RoomInfo.moneylist.push(0)
-				console.log('list0:' + this.RoomInfo.timelist + this.RoomInfo.templist)
 			},
 			showChange(type, p) {
 				console.log(type + '...' + p)
@@ -136,79 +118,55 @@
 					this.show_temp = true
 				}
 			},
-			returnSettingInfo(wind, temperature, state) {
-				this.Settings.wind = wind
-				this.Settings.temperature = temperature
-				this.Settings.state = state
-			},
-			returnMoney(money) {
-				this.RoomInfo.money = money
-			},
-			returnSensor(temp) {
-				this.RoomInfo.roomtemp = temp
-			},
 			getlist() {
-				this.RoomInfo.time = this.RoomInfo.time + 10;
-				this.RoomInfo.timelist.push(this.RoomInfo.time)
-				this.RoomInfo.templist.push(this.RoomInfo.roomtemp)
-				console.log('timelist:' + this.RoomInfo.timelist)
-				console.log('templist:' + this.RoomInfo.templist)
-			},
-			sendTemp() {
-				axios({
-					method: 'put',
-					url: 'http://101.200.120.102:8080/slave/status',
-					data: {
-						roomT: this.RoomInfo.roomtemp
-					},
-					headers: {
-						'Authorization': this.RoomInfo.token
-					}
-				}).then(this.getSendTempRes)
-			},
-			getSendTempRes(res) {
-				// Todo if success
-				console.log(res)
+				this.$store.commit('UpdateSlaveTime', 10)
+				this.RoomInfo.timelist.push(this.SlaveBasic.UseTime)
+				this.RoomInfo.templist.push(this.SlaveBasic.Temperature)
 			},
 			sendOnOff() {
 				if (this.machine === false) {
-					this.RoomInfo.onoff = '关'
+					this.$store.commit('UpdateASstate', '关机')
 					axios({
-						method: 'post',
-						url: 'localhost:8080/slave/off', // 关闭请求
+						method: 'get',
+						url: 'http://101.200.120.102:8080/slave/close', // 关闭请求
 						data: {},
 						headers: {
-							'Authorization': 'Bearer ' + this.RoomInfo.token
+							'Authorization': this.Customer.token
 						}
-					}).then(this.getSendOffRes)
+					}).then(res => {
+						console.log(res.data)
+					})
 				} else {
-					this.RoomInfo.onoff = '开'
+					this.$store.commit('UpdateASstate', '待机')
 					axios({
-						method: 'post',
-						url: 'http://101.200.120.102:8080/login/customer', // 关闭请求
-						data: {
-							'roomNo': this.RoomInfo.roomId,
-							'idNo': this.RoomInfo.idNo
+						method: 'get',
+						url: 'http://101.200.120.102:8080/slave/start', // 开启请求
+						data: {},
+						headers: {
+							'Authorization': this.Customer.token
 						}
-					}).then(this.getSendOnRes)
+					}).then(res => {
+						console.log(res.data)
+					})
 				}
-			},
-			getSendOffRes(res) {
-				// Todo
-				console.log(res)
-			},
-			getSendOnRes(res) {
-				console.log(res.data.data.token)
-				this.RoomInfo.token = res.data.data.token
 			}
 		},
 		computed: {
 			Customer() {
 				return this.$store.state.UserInfo
 			},
-			test () {
-			  return this.$store.state.defaultName
+			SlaveBasic() {
+				return this.$store.state.SlaveState.Basic
+			},
+			SlaveSettings() {
+				return this.$store.state.SlaveState.Settings
 			}
+		},
+		beforeDestroy() {
+			clearInterval(this.Timer.timer0);
+			this.Timer.timer0 = null;
+			clearInterval(this.Timer.timer1);
+			this.Timer.timer1 = null;
 		}
 	}
 </script>
