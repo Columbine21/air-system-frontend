@@ -54,8 +54,10 @@
             <el-card style="margin:5% 10%; width: 80%; height: 90%">
               <div slot="header">
                 <span>房间报表记录</span>
-                <el-button style="float: right; padding: 3px 0" @click="statisticReq" type="text">查询</el-button>
+                
+                <el-button style="float: right; padding: 3px 10px" @click="statisticReq" type="text">查询</el-button>
                 <el-button style="float: right; padding: 3px 10px" @click="statisticClear" type="text">清除</el-button>
+                <el-button style="float: right; padding: 3px 8px" @click="exportExcel" type="text">下载</el-button>
               </div>
               <el-form ref="statisticInfo.form" :model="statisticInfo.form" label-width="80px" :rules="statisticInfo.rules">
                 <el-form-item label="房间号码" prop="roomId">
@@ -73,7 +75,7 @@
                 <el-divider></el-divider>
                 <div style="margin-top: 3vh">开机次数&ensp; :&ensp; {{statisticInfo.data.start_times}}</div>
                 <div style="margin-top: 3vh">关机次数&ensp; :&ensp; {{statisticInfo.data.end_times}}</div>
-                <el-table :data="statisticInfo.data.contents" height="300" style="width: 100%; margin-top: 3vh" stripe border>
+                <el-table :data="statisticInfo.data.contents" height="300" style="width: 100%; margin-top: 3vh" id="statisticInfoTable" stripe border>
                   <el-table-column prop="start_time" label="开始时间" width="160" /> 
                   <el-table-column prop="end_time" label="结束时间" width="160" /> 
                   <el-table-column prop="start_room_temperature" label="起始温度" width="120" />
@@ -94,7 +96,9 @@
 </template>
 
 <script>
-import echarts from 'echarts'
+import FileSaver from "file-saver"
+import XLSX from "xlsx"
+// import echarts from 'echarts'
 import adminSettings from '@/pages/admin/subpages/setting'
 import adminInspect from '@/pages/admin/subpages/inspect'
 import statisticForm from '@/pages/admin/subpages/statisticForm'
@@ -164,17 +168,19 @@ export default {
       axios({
             method: 'post',
             url: '/report',
+            headers: { 
+              'Authorization': this.Manager.token
+            },
             data: {
             'roomNo': this.statisticInfo.form.roomId,
             'report_category': this.statisticInfo.form.peroid
             }
           }).then(this.showStatisticDetails)
-      // this.statisticInfo.roomId = roomId
     },
     showStatisticDetails (res) {
-      // Todo : here to use the respondence data
+      console.log("iefaiuerhgirghiughsight")
+      console.log(res.data)
       if (res.data.code === 200) {
-        // this.statisticInfo.showCharts = true
         this.statisticInfo.showResult = true
         this.statisticInfo.data = res.data.data
       } else {
@@ -183,14 +189,45 @@ export default {
     },
     statisticClear () {
       this.statisticInfo.showResult = false
+      this.statisticInfo.form.roomId = ''
+      this.statisticInfo.form.peroid = ''
     },
     initLogData (res) {
       if (res.data.code === 200) {
         this.HistoryData = res.data.data
-        // console.log(this.HistoryData);
+        console.log(this.HistoryData);
       } else {
         alert(res.data.msg + ' 请重新登陆！')
         this.handleLogout()
+      }
+    },
+    exportExcel () {
+      if (this.statisticInfo.showResult === true) {
+        var wb = XLSX.utils.table_to_book(document.querySelector("#statisticInfoTable"));
+        /* 获取二进制字符串作为输出 */
+        var wbout = XLSX.write(wb, {
+            bookType: "xlsx",
+            bookSST: true,
+            type: "array"
+        });
+        try {
+            FileSaver.saveAs(
+            //Blob 对象表示一个不可变、原始数据的类文件对象。
+            //Blob 表示的不一定是JavaScript原生格式的数据。
+            //File 接口基于Blob，继承了 blob 的功能并将其扩展使其支持用户系统上的文件。
+            //返回一个新创建的 Blob 对象，其内容由参数中给定的数组串联组成。
+            new Blob([wbout], { type: "application/octet-stream" }),
+            //设置导出文件名称
+            "statisticInfoTable.xlsx"
+            );
+        } catch (e) {
+            if (typeof console !== "undefined") console.log(e, wbout);
+        }
+        return wbout;
+      } else {
+        this.$alert('请在查询后下载', {
+          confirmButtonText: '确定'
+          })
       }
     }
   },

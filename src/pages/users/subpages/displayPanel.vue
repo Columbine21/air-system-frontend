@@ -9,7 +9,7 @@
 				<span>运行状态&ensp; :&ensp;{{SlaveBasic.State}}</span>
 			</div>
 			<div style="margin-top: 5vh">
-				<span>运行时间&ensp; :&ensp;{{SlaveBasic.UseTime}} 分钟</span>
+				<span>运行时间&ensp; :&ensp;{{SlaveBasic.UseTime}} 秒</span>
 			</div>
 			<div style="margin-top: 5vh">
 				<span>当前温度&ensp; :&ensp;{{SlaveBasic.Temperature}}°C</span>

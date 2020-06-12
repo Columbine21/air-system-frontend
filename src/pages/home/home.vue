@@ -11,16 +11,18 @@
       <el-form ref="loginForm" :model="form" :rules="rules">
         <img  style="width: 20%; margin:10px 40%" src="../../assets/avater.jpeg" />
        
-          <el-form-item label="账号" prop="username">
+          <el-form-item prop="username">
+            <span slot="label">{{id}}</span>
             <el-input type="text" class='field' placeholder="请输入账号" v-model="form.username" />
           </el-form-item> 
         
-          <el-form-item label="密码" prop="password">
+          <el-form-item prop="password">
+            <span slot="label">{{key}}</span>
             <el-input type="password" class='field' placeholder="请输入密码" v-model="form.password" />
           </el-form-item>
           
           <el-form-item label="用户类型" prop="userType" style="text-align: center">
-            <el-radio-group v-model="form.userType">
+            <el-radio-group v-model="form.userType" @change="changeLabel">
               <el-radio label="Traveler" /> <el-radio label="Administrator" />
             </el-radio-group>
         </el-form-item>
@@ -41,6 +43,8 @@ export default {
   data () {
     return {
       validity: true,
+      id: '房间',
+      key: '身份证',
       message: '',
       form: {
         username: '',
@@ -107,6 +111,15 @@ export default {
         this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url, token: res.data.data.token, roomNo: res.data.data.roomNo})
       } else {
         alert('Login Failed !')
+      }
+    },
+    changeLabel () {
+      if (this.form.userType === 'Traveler') {
+        this.id = '房间'
+        this.key = '身份证'
+      } else {
+        this.id = '账号'
+        this.key = '密码'
       }
     }
   },

@@ -18,6 +18,7 @@ const defaultTotalMoney = 0
 const defaultUseTime = 0
 const defaultState = '制冷'
 const defaultSlaveTemp = 27
+const defaultError = 0
 // const defaultMode = 50
 
 export default new Vuex.Store({
@@ -50,7 +51,8 @@ export default new Vuex.Store({
 		Settings: {
 			SetTemperature: defaultTemperature,
 			SetWind: defaultWind
-		}
+		},
+		Error: defaultError
 	}
   },
   mutations: {
@@ -93,6 +95,9 @@ export default new Vuex.Store({
 	},
 	UpdateSlaveTotalMoney(state, money) {
 	  state.SlaveState.Basic.TotalMoney = money
+	},
+	UpdateSlaveError(state, error) {
+	  state.SlaveState.Error = error
 	}
   }
 })
