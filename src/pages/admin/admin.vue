@@ -41,8 +41,7 @@
           <admin-settings></admin-settings>
         </div>
         <div v-show="showControl.selectInspect">
-          <admin-inspect 
-          :HistoryData="HistoryData"></admin-inspect>
+          <admin-inspect></admin-inspect>
         </div>
         <div v-show="showControl.selectStatistics">
           <!-- <el-divider direction="vertical"></el-divider> -->
@@ -57,7 +56,9 @@
                 
                 <el-button style="float: right; padding: 3px 10px" @click="statisticReq" type="text">查询</el-button>
                 <el-button style="float: right; padding: 3px 10px" @click="statisticClear" type="text">清除</el-button>
-                <el-button style="float: right; padding: 3px 8px" @click="exportExcel" type="text">下载</el-button>
+                <el-button style="float: right; padding: 3px 8px" 
+                @click="exportExcel(statisticInfo.form.roomId, statisticInfo.data.start_times, statisticInfo.data.end_times)" 
+                type="text">下载</el-button>
               </div>
               <el-form ref="statisticInfo.form" :model="statisticInfo.form" label-width="80px" :rules="statisticInfo.rules">
                 <el-form-item label="房间号码" prop="roomId">
@@ -117,7 +118,7 @@ export default {
         selectInspect: false,
         selectStatistics: false
       },
-      HistoryData: null,
+      // HistoryData: null,
       statisticInfo: {
         showResult: false,
         rules: {
@@ -178,7 +179,7 @@ export default {
           }).then(this.showStatisticDetails)
     },
     showStatisticDetails (res) {
-      console.log("iefaiuerhgirghiughsight")
+      // console.log("iefaiuerhgirghiughsight")
       console.log(res.data)
       if (res.data.code === 200) {
         this.statisticInfo.showResult = true
@@ -192,16 +193,16 @@ export default {
       this.statisticInfo.form.roomId = ''
       this.statisticInfo.form.peroid = ''
     },
-    initLogData (res) {
-      if (res.data.code === 200) {
-        this.HistoryData = res.data.data
-        console.log(this.HistoryData);
-      } else {
-        alert(res.data.msg + ' 请重新登陆！')
-        this.handleLogout()
-      }
-    },
-    exportExcel () {
+    // initLogData (res) {
+    //   if (res.data.code === 200) {
+    //     this.HistoryData = res.data.data
+    //     console.log(this.HistoryData);
+    //   } else {
+    //     alert(res.data.msg + ' 请重新登陆！')
+    //     this.handleLogout()
+    //   }
+    // },
+    exportExcel (roomId, startT, closeT) {
       if (this.statisticInfo.showResult === true) {
         var wb = XLSX.utils.table_to_book(document.querySelector("#statisticInfoTable"));
         /* 获取二进制字符串作为输出 */
@@ -218,7 +219,7 @@ export default {
             //返回一个新创建的 Blob 对象，其内容由参数中给定的数组串联组成。
             new Blob([wbout], { type: "application/octet-stream" }),
             //设置导出文件名称
-            "statisticInfoTable.xlsx"
+            "Room" + roomId + "_" + startT + "_" + closeT + ".xlsx"
             );
         } catch (e) {
             if (typeof console !== "undefined") console.log(e, wbout);
@@ -239,8 +240,9 @@ export default {
       return this.$store.state.MasterState
     }
   },
-  mounted () {
-    axios.get('/master/log', { headers: { 'Authorization': this.Manager.token}}).then(this.initLogData)
+  beforeDestroy () {
+    this.statisticInfo.form = null
+    this.statisticInfo.data = null
   }
 }
 </script>

@@ -20,20 +20,29 @@
 		</el-aside>
 
 		<el-container>
-			<el-header style="text-align: right; font-size: 12px">
-				<el-switch @change="sendOnOff" v-model="machine" active-text="开" inactive-text="关" name="空调开关">
+			<el-header>
+				<img style="left:10px;width: 9%" src='../../assets/avater.jpeg' />
+				<img style="margin:0 25%;width: 15%" src='../../assets/logo.png' />
+				<el-popover style="right: 100px" trigger="click">
+					<div>
+						<img style="margin:0 50%;width: 30%" src='../../assets/bill.png' />
+					</div>
+					<el-button slot="reference" type="primary" round>立即付款</el-button>
+				</el-popover>
+				<el-switch style="left:50px;text-align: right; font-size: 12px" @change="sendOnOff" v-model="machine" active-text="开"
+				 inactive-text="关" name="空调开关">
 				</el-switch>
 				<span>{{Customer.name}}</span>
 			</el-header>
 
 			<el-main>
-				<sensor></sensor>
+				<sensor ref="sensor"></sensor>
 				<div v-show="show_info">
 					<display-panal></display-panal>
 				</div>
 
 				<div v-show="show_setting">
-					<setting></setting>
+					<setting ref="set"></setting>
 				</div>
 
 				<div v-show="show_money">
@@ -93,29 +102,36 @@
 			this.init()
 		},
 		methods: {
+			/*
+			 *  init() initInfo()  初始化
+			 */
 			init() {
 				this.RoomInfo.timelist.push(0)
 				this.RoomInfo.templist.push(this.SlaveBasic.Temperature)
 				this.RoomInfo.moneylist.push(0)
-				this.initTemp()
+				this.initInfo()
 			},
-			initTemp() {
-				axios.get('/room/temperature', {
-						retry: 3,
-						retryDelay: 3000,
+			initInfo() {
+				axios.get('/slave/status', {
 						headers: {
 							'Authorization': this.Customer.token
 						}
 					})
 					.then(res => {
-						console.log('room温度请求：')
+						console.log('init请求：')
 						console.log(res.data)
-						this.$store.commit('UpdateSlaveTemp', res.data.data.current_room_temperature)
+						this.$store.commit('SetSlaveState', res.data.data)
+						if (this.SlaveBasic.ASstate === '关机') this.machine = false
+						else this.machine = true
+						this.$refs.set.init()
 					})
 					.catch(function(err) {
 						console.log('failed', err);
 					});
 			},
+			/*
+			 *  showChange() 切换页面
+			 */
 			showChange(type, p) {
 				console.log(type + '...' + p)
 				if (type === 'info') {
@@ -140,20 +156,21 @@
 					this.show_temp = true
 				}
 			},
+			/*
+			 *  getlist() + getMoney() 每10s更新一下templist和moneylist
+			 */
 			getlist() {
 				this.$store.commit('UpdateSlaveTime', 10)
 				this.RoomInfo.timelist.push(this.SlaveBasic.UseTime)
 				this.RoomInfo.templist.push(this.SlaveBasic.Temperature)
 				this.getMoney()
-				this.RoomInfo.moneylist.push(this.SlaveBasic.TotalMoney)
 			},
 			getMoney() {
+				this.initInfo()
 				if (this.SlaveBasic.ASstate === '关机') {
 					return
 				}
 				axios.get('/slave/bill', {
-						retry: 3,
-						retryDelay: 3000,
 						headers: {
 							'Authorization': this.Customer.token
 						}
@@ -161,23 +178,37 @@
 					.then(res => {
 						console.log('计费请求：')
 						console.log(res.data)
-						this.$store.commit('UpdateSlaveTotalMoney', res.data.data.cost.toFixed(2))
+						console.log(parseFloat(res.data.data.cost))
+						console.log(parseFloat(this.SlaveBasic.TotalMoney))
+						if (parseFloat(res.data.data.cost) >= parseFloat(this.SlaveBasic.TotalMoney)) {
+							console.log(res.data)
+							this.$store.commit('UpdateSlaveTotalMoney', res.data.data.cost.toFixed(2))
+							this.RoomInfo.moneylist.push(this.SlaveBasic.TotalMoney)
+						} else {
+							this.RoomInfo.moneylist.push(this.SlaveBasic.TotalMoney)
+						}
 					})
 					.catch(function(err) {
 						console.log('failed', err);
 					});
 			},
+			/*
+			 *  sendOnOff 开关状态变化时被调用
+			 *  sendOffReq（） 发送关机请求
+			 *  sendOnReq（） 发送开机请求
+			 */
 			sendOnOff() {
 				if (this.machine === false) {
-					this.sendOnReq()
-				} else {
 					this.sendOffReq()
+				} else {
+					this.sendOnReq()
 				}
 			},
-			sendOnReq() {
+			sendOffReq() {
+				// this.$refs.sensor.sendWindStopReq()
 				axios({
 					method: 'get',
-					url: 'http://101.200.120.102:8080/slave/close', // 关闭请求
+					url: '/slave/close', // 关闭请求
 					data: {},
 					headers: {
 						'Authorization': this.Customer.token
@@ -186,14 +217,15 @@
 					console.log('关闭请求：')
 					console.log(res.data)
 					if (res.data.code === 200) {
+						this.$refs.sensor.code = 0
 						this.$store.commit('UpdateASstate', '关机')
 					}
 				})
 			},
-			sendOffReq() {
+			sendOnReq() {
 				axios({
 					method: 'get',
-					url: 'http://101.200.120.102:8080/slave/start', // 开启请求
+					url: '/slave/start', // 开启请求
 					data: {},
 					headers: {
 						'Authorization': this.Customer.token
@@ -209,9 +241,12 @@
 					}
 				})
 			},
+			/*
+			 *  循环处理错误代码
+			 */
 			handleError() {
 				var e = this.$store.state.SlaveState.Error
-				console.log('err:' + e)
+				// console.log('err:' + e)
 				if (e !== 0) {
 					if (e === 1) {
 						this.sendOffReq()

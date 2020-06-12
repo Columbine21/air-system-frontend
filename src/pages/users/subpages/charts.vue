@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<el-divider direction="vertical"></el-divider>
 		<el-card style="margin:5vh 10%; width: 80%;">
 			<div slot="header">
 				<span>房间：{{SlaveBasic.RoomNo}}</span>
@@ -41,8 +40,8 @@
 					}
 				},
 				chartInfo: [{
-					timelist: ['5:00', '5:30', '6:00', '6:30', '7:00', '7:30', '8:00', '8:30', '9:00'],
-					datalist: [0, 1.2, 1.8, 2.1, 2.3, 2.3, 2.3, 2.5, 2.9],
+					timelist: [],
+					datalist: [],
 					xname: '时间',
 					yname: '费用',
 					text: '费用变化',

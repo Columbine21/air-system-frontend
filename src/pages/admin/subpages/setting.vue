@@ -6,7 +6,7 @@
         <div slot="header">
           <span>系统设置</span>
         </div>
-        <div style="margin-top: 4px; font-size: 14px">系统时间</div>
+        <!-- <div style="margin-top: 4px; font-size: 14px">系统时间</div>
         <el-date-picker
           ref="date"
           v-model="SettingForm.systemTime"
@@ -16,7 +16,7 @@
           style="margin-top: 10px; margin-left: 20%; width: 60%"
           placeholder="Please set the Date."
           >
-        </el-date-picker>
+        </el-date-picker> -->
         <div>
           <div style="margin-top: 4px; font-size: 14px">系统开关</div>
           <el-switch style="margin: 5% 0 0 36%"
@@ -28,6 +28,14 @@
         </div>
         <el-collapse accordion style="margin-top:3vh">
           <el-collapse-item title="当前主控状态">
+            <div>
+              <div style="font-size: 14px">工作模式</div>
+              <el-radio-group v-model="SystemWorkMode" style="margin-top: 3vh; margin-top: 3vh;margin-left: 15%" disabled>
+                <el-radio :label="0">关闭状态</el-radio>
+                <el-radio :label="1">待机状态</el-radio>
+                <el-radio :label="2">工作状态</el-radio>
+              </el-radio-group>
+            </div>
             <div>
               <div style="margin-top: 4px; font-size: 14px">系统模式</div>
               <el-switch style="margin: 5% 0 0 36%"
@@ -44,7 +52,7 @@
             </div>
             <div style="margin-top: 3vh">
               <div>刷新频率</div>
-              <el-input  disabled style="margin: 1vh 20%; width: 60%" placeholder="刷新频率(单位s)" v-model="MasterState.Settings.SetFrequence" />
+              <el-input  disabled style="margin: 1vh 20%; width: 60%" placeholder="刷新频率(单位s)" v-model="transformedFrequence" />
             </div>
             <el-button type="primary" style="width: 40%;margin-top:2vh; margin-left:30%" @click="ShowModify">修改主控详细设置</el-button>
           </el-collapse-item>
@@ -95,6 +103,9 @@ export default {
         systemMode: null,
         temperature: null,
         refreshFrequence: null
+      },
+      Timer: {
+        timer0: null
       }
     }
   },
@@ -104,14 +115,14 @@ export default {
       this.SettingForm.powerOn = this.MasterState.Basic.Poweron
       this.SettingForm.systemMode = this.MasterState.Basic.Mode
       this.SettingForm.temperature = this.MasterState.Settings.SetTemperature
-      this.SettingForm.refreshFrequence = this.MasterState.Settings.SetFrequence
+      this.SettingForm.refreshFrequence = this.transformedFrequence
     },
     clear () {
       this.showModifySection = false
 
       this.SettingForm.systemMode = this.MasterState.Basic.Mode
       this.SettingForm.temperature = this.MasterState.Settings.SetTemperature
-      this.SettingForm.refreshFrequence = this.MasterState.Settings.SetFrequence
+      this.SettingForm.refreshFrequence = this.transformedFrequence
     },
     submit () {
       let tmpMode = this.SettingForm.systemMode === true ? 'COOL' : 'HEAT'
@@ -124,7 +135,7 @@ export default {
             },
             data: {
               'mode': tmpMode,
-              'freq': this.SettingForm.refreshFrequence,
+              'freq': this.SettingForm.refreshFrequence * 1000,
               't': this.SettingForm.temperature
             }
           }).then(this.getSetModeRes)
@@ -132,12 +143,14 @@ export default {
     },
     getSetModeRes (res) {
       console.log(res.data);
+      let refreshFrequence = this.SettingForm.refreshFrequence * 1000
       if (res.data.code === 200) {
         this.$store.commit('SetMasterState',{
           'Poweron': this.MasterState.Basic.Poweron,
           'Mode': this.SettingForm.systemMode, 
+          'WorkStatus': this.MasterState.Basic.WorkStatus,
           'SetTemperature': this.SettingForm.temperature,
-          'SetFrequence': this.SettingForm.refreshFrequence
+          'SetFrequence': refreshFrequence
         })
         // this.$store.commit('Login', {userName: res.data.data.adminId, avaterUrl: url})
       } else {
@@ -145,13 +158,24 @@ export default {
       } 
     },
     initStatus (res) {
+      // console.log("auto set status")
+      // console.log(res.data.data)
       let statuson = res.data.data.state === "CLOSE" ? false : true
+      // if (res.data.data.state === "RUNNING") {
+      //   var statuson = true
+      // } else if (res.data.data.state === "WAITING") {
+      //   var statuson = true
+      // } else if (res.data.data.state === "CLOSE") {
+      //   var statuson = false
+      // }
+
       let statusmode = res.data.data.mode === "COOL" ? true : false
       let temperature = res.data.data.ct
       let frequence = res.data.data.interval_ms
       this.$store.commit('SetMasterState', {
         'Poweron': statuson,
         'Mode': statusmode,
+        'WorkStatus': res.data.data.state,
         'SetTemperature': temperature,
         'SetFrequence': frequence
         })
@@ -185,6 +209,9 @@ export default {
           })
         }
       }
+    },
+    getMasterStatus () {
+      axios.get('/master/status', { headers: { 'Authorization': this.Manager.token}}).then(this.initStatus)
     }
   },
   computed: {
@@ -199,10 +226,27 @@ export default {
     },
     TemperatureControlerMax () {
       return this.SettingForm.systemMode === false ? 31 : 25
+    }, 
+    transformedFrequence () {
+      return this.MasterState.Settings.SetFrequence / 1000
+    },
+    SystemWorkMode () {
+      if (this.MasterState.Basic.WorkStatus === "CLOSE") {
+        return 0
+      } else if (this.MasterState.Basic.WorkStatus === "WAITING") {
+        return 1
+      } else {
+        return 2
+      }  
     }
   },
   mounted () {
-    axios.get('/master/status', { headers: { 'Authorization': this.Manager.token}}).then(this.initStatus)
+    this.getMasterStatus()
+    this.Timer.timer0 = setInterval(this.getMasterStatus, 500)
+  },
+  beforeDestroy () {
+    clearInterval(this.Timer.timer0)
+    this.Timer.timer0 = null
   }
 }
 </script>

@@ -9,15 +9,15 @@
         </div>
       <el-collapse v-model="activeName" accordion>
         <el-collapse-item title="从控机当前状态" name="1">
-          <el-table :data="inspectInfo.form.record" height="400" style="margin-left:5%;width: 90%" id="currentStateTable" stripe border>
-            <el-table-column prop="roomId" label="房间号码" width="120" />
-            <el-table-column prop="" label="当前温度" width="120" />
-            <el-table-column prop="temperature" label="设定温度" width="120" />
-            <el-table-column prop="" label="送风状态" width="120" />
-            <el-table-column prop="" label="通信状态"
-            width="120" />
-            <el-table-column prop="mode" label="设定风速" width="120" />
-            <el-table-column prop="" label="总收费" />
+          <el-table :data="inspectInfo.form.record" height="400" style="margin-left:5%;width: 90%" id="currentStateTable" stripe border fit>
+            <el-table-column prop="roomNo" label="房间号码" />
+            <el-table-column prop="current_temperature" label="当前温度" />
+            <el-table-column prop="target_temperature" label="设定温度"  />
+            <el-table-column prop="state" label="送风状态"  />
+            <el-table-column prop="communication_state" label="通信状态"
+             />
+            <el-table-column prop="wind_level" label="设定风速"  />
+            <el-table-column prop="total_cost" label="总收费" />
           </el-table>
         </el-collapse-item>
         <el-collapse-item title="使用历史记录" name="2">
@@ -42,35 +42,63 @@ import FileSaver from "file-saver";
 import XLSX from "xlsx";
 export default {
   name: 'adminInspect',
-  props: ['HistoryData'],
   data () {
     return {
       activeName: '1',
-      HistoryDataParent: this.HistoryData,
+      HistoryDataParent: null,
       inspectInfo: {
         form: {
           roomId: '',
-          record: [{
-            startTime: '',
-            endTime: '',
-            setTemperature: null,
-            setMode: '',
-            spent: null
-          }]
+          record: null
         }
       },
+      Timer: {
+        timer0: null
+      }
     }
   },
   methods: {
     Refresh () {
-      axios.get('/master/log', { headers: { 'Authorization': this.Manager.token}}).then(this.refreshLogData)
+      axios.get(
+        '/master/slaves', 
+        { 
+          headers: {
+             'Authorization': this.Manager.token
+          }
+        }).then(this.refreshStatusData)
+
+      axios.get(
+        '/master/log',
+        { 
+          headers: {
+            'Authorization': this.Manager.token
+          }
+        }).then(this.refreshLogData)
     },
     refreshLogData (res) {
+      // console.log(res.data)
+      console.log("refresh log data")
       if (res.data.code === 200) {
+
         this.HistoryDataParent = res.data.data
         console.log(this.HistoryDataParent);
+        
       } else {
-        alert(res.data.msg + ' 请重新登陆！')
+        this.$alert(res.data.msg + ' 请重新登陆！', {
+          confirmButtonText: '确定'
+          })
+        this.handleLogout()
+      }
+    },
+    refreshStatusData (res) {
+      console.log("refresh status data")
+      if (res.data.code === 200) {
+        this.inspectInfo.form.record = res.data.data.contents
+        console.log(this.inspectInfo.form.record)
+      } else {
+        this.$alert(res.data.msg + ' 请重新登陆！', {
+          confirmButtonText: '确定'
+          })
         this.handleLogout()
       }
     },
@@ -100,9 +128,7 @@ export default {
         }
         return wbout;
       } else {
-        /* 从表生成工作簿对象 */
         var wb = XLSX.utils.table_to_book(document.querySelector("#HistoryTable"));
-        /* 获取二进制字符串作为输出 */
         var wbout = XLSX.write(wb, {
             bookType: "xlsx",
             bookSST: true,
@@ -110,12 +136,7 @@ export default {
         });
         try {
             FileSaver.saveAs(
-            //Blob 对象表示一个不可变、原始数据的类文件对象。
-            //Blob 表示的不一定是JavaScript原生格式的数据。
-            //File 接口基于Blob，继承了 blob 的功能并将其扩展使其支持用户系统上的文件。
-            //返回一个新创建的 Blob 对象，其内容由参数中给定的数组串联组成。
             new Blob([wbout], { type: "application/octet-stream" }),
-            //设置导出文件名称
             "HistoryData.xlsx"
             );
         } catch (e) {
@@ -132,6 +153,29 @@ export default {
     MasterState () {
       return this.$store.state.MasterState
     }
+  },
+  mounted () {
+    this.Timer.timer0 = setInterval(this.Refresh, 10000)
+    axios.get(
+      '/master/slaves',
+      { headers: {
+         'Authorization': this.Manager.token
+        }
+      }
+    ).then(this.refreshStatusData)
+
+    axios.get(
+      '/master/log',
+       { headers: { 
+         'Authorization': this.Manager.token
+        }
+      }).then(this.refreshLogData)
+  },
+  beforeDestroy () {
+    this.HistoryDataParent = null
+    this.inspectInfo.form.record = null
+    clearInterval(this.Timer.timer0)
+    this.Timer.timer0 = null
   }
 }
 </script>

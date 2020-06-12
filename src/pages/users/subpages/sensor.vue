@@ -4,29 +4,6 @@
 
 <script>
 	import axios from 'axios'
-	axios.interceptors.response.use(undefined, function axiosRetryInterceptor(err) {
-		console.log('重连')
-		var config = err.config;
-		console.log(config)
-		console.log('11' + config.retry)
-		console.log('第' + config.__retryCount + '次重连')
-		alert('第' + config.__retryCount + '次重连')
-		if (!config || !config.retry) return Promise.reject(err);
-		
-		config.__retryCount = config.__retryCount || 0;
-		if (config.__retryCount >= config.retry) {
-			return Promise.reject(err);
-		}
-		config.__retryCount += 1;
-		var backoff = new Promise(function(resolve) {
-			setTimeout(function() {
-				resolve();
-			}, config.retryDelay || 1);
-		});
-		return backoff.then(function() {
-			return axios(config);
-		});
-	});
 	export default {
 		name: 'sensor',
 		data() {
@@ -35,6 +12,7 @@
 				timer2: '',
 				timer3: '',
 				timer4: '',
+				timer5: '',
 				frq: 0,
 				retry: 0,
 				code: 0,
@@ -52,6 +30,9 @@
 			init() {
 				this.timer3 = setInterval(this.sendTemp, 5000);
 			},
+			/*
+			* get() 按照3s的频率进行刷新 室温
+			*/
 			get() {
 				this.refresh()
 				if (this.SlaveBasic.ASstate === '送风') {
@@ -84,13 +65,14 @@
 					}
 				}
 			},
+			/*
+			* get() 按照1s的频率进行刷新 送风情况
+			*/
 			getWind() {
-				if (this.SlaveBasic.ASstate === '关机') {
+				if (this.SlaveBasic.ASstate === '关机' || this.code === 0) {
 					return
 				}
 				axios.get('/slave/wind', {
-						retry: 3,
-						retryDelay: 3000,
 						headers: {
 							'Authorization': this.Customer.token
 						}
@@ -118,6 +100,9 @@
 						console.log('failed', err);
 					});
 			},
+			/*
+			* refresh（） 按照10ms的频率进行刷新 frq（更新室温）
+			*/
 			refresh() {
 				if (this.SlaveBasic.ASstate === '送风') {
 					switch (this.SlaveSettings.SetWind) {
@@ -137,13 +122,14 @@
 					this.frq = 0.3
 				}
 			},
+			/*
+			* sendTemp（）定时发送温度
+			*/
 			sendTemp() {
-				if (this.SlaveBasic.ASstate === '关机') {
-					return
-				}
+				const that = this
 				axios({
 					method: 'put',
-					url: 'http://101.200.120.102:8080/slave/sensor',
+					url: '/slave/sensor',
 					retry: 3,
 					retryDelay: 3000,
 					data: {
@@ -155,6 +141,7 @@
 				}).then(res => {
 					console.log('发送temp：')
 					console.log(res.data)
+					this.retry = 0
 					if (res.data.code === 400) {
 						this.alertTokenOverdue()
 					} else if (res.data.data.interval_ms !== 0) {
@@ -162,12 +149,17 @@
 					}
 				}).catch(function(err) {
 					console.log(err);
+					that.retryConnect()
 				})
 			},
 			alertTokenOverdue() {
 				alert('Token已过期，请重新登陆')
 				this.$router.push('login')
 			},
+			/*
+			* sendWindReq 送风请求
+			* sendWindStopReq 停风请求
+			*/
 			sendWindReq() {
 				if (this.SlaveBasic.ASstate === '关机' || this.code === 1) {
 					return
@@ -175,7 +167,7 @@
 				console.log(this.Customer.token)
 				axios({
 					method: 'post',
-					url: 'http://101.200.120.102:8080/slave/on',
+					url: '/slave/on',
 					data: {
 						'ct': this.SlaveBasic.Temperature
 					},
@@ -203,9 +195,10 @@
 				})
 			},
 			sendWindStopReq() {
+				this.code = 0
 				axios({
 					method: 'post',
-					url: 'http://101.200.120.102:8080/slave/off',
+					url: '/slave/off',
 					data: {
 						'ct': this.SlaveBasic.Temperature
 					},
@@ -214,7 +207,6 @@
 					}
 				}).then(res => {
 					console.log('停风请求：')
-					
 					console.log(res.data)
 					if (res.data.code === 200) {
 						this.code = 0
@@ -226,16 +218,29 @@
 					console.log(err);
 				});
 			},
+			/*
+			* 异常检测
+			*/
 			retryConnect(code) {
-				alert('与主机连接断开')
-				this.retry++
+				this.timer5 = setTimeout(this.retryC(), 2000)
+			},
+			retryC() {
+				if (this.retry === 0) {
+					this.showMsg('与主机断开连接')
+					this.retry++
+					return
+				}
 				if (this.retry < 4) {
-					
+					this.showMsg('第' + this.retry + '次重连')
+					this.retry++
+					this.sendretryTemp()
 				} else {
 					alert('已与主机连接断开,请重新登陆')
 					this.$router.push('login')
 				}
-				this.retry = 0
+			},
+			showMsg(str) {
+				this.$message(str);
 			}
 		},
 		computed: {
@@ -259,6 +264,8 @@
 			this.timer2 = null;
 			clearInterval(this.timer3);
 			this.timer3 = null;
+			clearInterval(this.timer4);
+			this.timer4 = null;
 		}
 	}
 </script>

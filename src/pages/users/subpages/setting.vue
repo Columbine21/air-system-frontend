@@ -29,9 +29,9 @@
 		data() {
 			return {
 				marksWind: {
-					0: 'low',
-					50: 'medium',
-					100: 'high'
+					0: 'LOW',
+					50: 'MEDIUM',
+					100: 'HIGH'
 				},
 				SetTemp: {
 					min: 18,
@@ -64,8 +64,8 @@
 		},
 		methods: {
 			init() {
-				// this.getDefaultTemp()
-				this.CentTemp = this.MasterSettings.SetTemperature
+				this.getDefaultTemp()
+				this.CentTemp = this.SlaveSettings.SetTemperature
 				this.CentWind = this.SlaveSettings.SetWind
 				if (this.SlaveBasic.State === '制热') {
 					this.SetTemp.min = 25
@@ -73,7 +73,7 @@
 				}
 			},
 			changeInfo(currentValue, oldValue) {
-				// this.getDefaultTemp()
+				this.getDefaultTemp()
 				if (this.SlaveBasic.State === '制冷') {
 					if (this.CentTemp > parseFloat(this.SlaveBasic.Temperature) || this.CentTemp < this.MasterSettings.SetTemperature) {
 						if (parseFloat(this.CentTemp) > parseFloat(this.SlaveBasic.Temperature)) {
@@ -125,7 +125,7 @@
 				this.time1 = 0
 				axios({
 					method: 'post',
-					url: 'http://101.200.120.102:8080/slave/set', // 发送设置参数
+					url: '/slave/set', // 发送设置参数
 					data: {
 						t: this.SlaveSettings.SetTemperature,
 						wind: this.marksWind[this.SlaveSettings.SetWind]
@@ -135,7 +135,7 @@
 					}
 				}).then(res => {
 					console.log('设置参数发送：')
-					console.log(res.data)
+					console.log(res)
 				})
 			},
 			reload() {
@@ -145,10 +145,7 @@
 				})
 			},
 			getDefaultTemp() { // 获取主机温度
-				axios({
-					method: 'get',
-					url: 'http://101.200.120.102:8080/slave/default',
-					data: {},
+				axios.get('/slave/default', {
 					headers: {
 						'Authorization': this.Customer.token
 					}
@@ -160,6 +157,7 @@
 					console.log('请求主机设定温度失败')
 					alert('请求主机设定温度失败')
 				} else {
+					console.log(res.data)
 					var mode = ''
 					if (res.data.data.mode === 'COOL') {
 						mode = '制冷'
