@@ -5,7 +5,7 @@
           <span>监控面板</span>
           <el-button style="float: right; padding: 3px 10px" type="text" @click="exportExcel('historyState')">导出历史记录表</el-button>
           <el-button style="float: right; padding: 3px 10px" type="text" @click="exportExcel('currentState')">导出当前状态表</el-button>
-          <el-button style="float: right; padding: 3px 10px" type="text" @click="Refresh">Refresh</el-button>
+          <!-- <el-button style="float: right; padding: 3px 10px" type="text" @click="Refresh">Refresh</el-button> -->
         </div>
       <el-collapse v-model="activeName" accordion>
         <el-collapse-item title="从控机当前状态" name="1">
@@ -13,7 +13,7 @@
             <el-table-column prop="roomNo" label="房间号码" />
             <el-table-column prop="current_temperature" label="当前温度" />
             <el-table-column prop="target_temperature" label="设定温度"  />
-            <el-table-column prop="state" label="送风状态"  />
+            <el-table-column prop="state" label="从控状态"  />
             <el-table-column prop="communication_state" label="通信状态"
              />
             <el-table-column prop="wind_level" label="设定风速"  />
@@ -155,7 +155,7 @@ export default {
     }
   },
   mounted () {
-    this.Timer.timer0 = setInterval(this.Refresh, 10000)
+    this.Timer.timer0 = setInterval(this.Refresh, 3000)
     axios.get(
       '/master/slaves',
       { headers: {

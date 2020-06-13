@@ -23,15 +23,16 @@
 			<el-header>
 				<img style="left:10px;width: 9%" src='../../assets/avater.jpeg' />
 				<img style="margin:0 25%;width: 15%" src='../../assets/logo.png' />
-				<el-popover style="right: 100px" trigger="click">
+				<el-popover style="margin:0 1%" trigger="click">
 					<div>
 						<img style="margin:0 50%;width: 30%" src='../../assets/bill.png' />
 					</div>
 					<el-button slot="reference" type="primary" round>立即付款</el-button>
 				</el-popover>
-				<el-switch style="left:50px;text-align: right; font-size: 12px" @change="sendOnOff" v-model="machine" active-text="开"
+				<el-button style="margin:0 1%" type="primary" round @click="sendOffReq">关机</el-button>
+				<!--el-switch style="left:50px;text-align: right; font-size: 12px" @change="sendOnOff" v-model="machine" active-text="开"
 				 inactive-text="关" name="空调开关">
-				</el-switch>
+				</el-switch -->
 				<span>{{Customer.name}}</span>
 			</el-header>
 
@@ -106,6 +107,7 @@
 			 *  init() initInfo()  初始化
 			 */
 			init() {
+				this.sendOnReq()
 				this.RoomInfo.timelist.push(0)
 				this.RoomInfo.templist.push(this.SlaveBasic.Temperature)
 				this.RoomInfo.moneylist.push(0)
@@ -197,13 +199,13 @@
 			 *  sendOffReq（） 发送关机请求
 			 *  sendOnReq（） 发送开机请求
 			 */
-			sendOnOff() {
+			/* sendOnOff() {
 				if (this.machine === false) {
 					this.sendOffReq()
 				} else {
 					this.sendOnReq()
 				}
-			},
+			}, */
 			sendOffReq() {
 				// this.$refs.sensor.sendWindStopReq()
 				axios({
@@ -219,6 +221,7 @@
 					if (res.data.code === 200) {
 						this.$refs.sensor.code = 0
 						this.$store.commit('UpdateASstate', '关机')
+						this.$router.push('login')
 					}
 				})
 			},
@@ -238,6 +241,8 @@
 					} else {
 						this.machine = false
 						alert(res.data.msg)
+						alert('请联系前台后重新登录')
+						this.$router.push('login')
 					}
 				})
 			},

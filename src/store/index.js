@@ -125,8 +125,10 @@ export default new Vuex.Store({
 	  state.SlaveState.Settings.SetWind = SettingInfo.Wind
 	},
 	UpdateMasterState(state, SettingInfo) {
-	  state.MasterState.SetTemperature = SettingInfo.Temp
+	  state.MasterState.Settings.SetTemperature = SettingInfo.Temp
 	  state.MasterState.Basic.Mode = SettingInfo.Mode
+	  state.SlaveState.Basic.State = SettingInfo.Mode
+	  console.log('1 ' + state.SlaveState.Basic.State)
 	},
 	UpdateSlaveTime(state, time) {
 	  state.SlaveState.Basic.UseTime = time + state.SlaveState.Basic.UseTime

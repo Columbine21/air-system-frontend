@@ -1,39 +1,47 @@
 <template>
 	<el-container>
 		<img src="../../assets/bkPhot2.jpg" style=" z-index: -1; position: fixed; width: 100vw; height: 100vh;" />
-		<el-button style="width: 10%; margin: 0 auto; margin-top: 2vh; margin-bottom: 2vh;" @click="show = !show" v-if="!show" type="primary" plain>空调开机</el-button>
+		<!-- <el-button style="width: 10%; margin: 0 auto; margin-top: 2vh; margin-bottom: 2vh;" @click="show = !show" v-if="!show" type="primary" plain>空调开机</el-button> -->
 
-		<transition name="el-zoom-in-center">
-			<el-card style="width: 40%; margin: 0 auto; margin-top: 15vh; margin-bottom: 10vh; opacity: .8" v-if="show">
-				<div>
-					<img style="margin: 0 20%;width: 60%" src='../../assets/logo.png' />
-				</div>
+    <el-card style="width: 40%; margin: 0 auto; margin-top: 15vh; margin-bottom: 10vh; opacity: .8">
+      <div>
+        <img style="margin: 0 20%;width: 60%" src='../../assets/logo.png' />
+      </div>
+      <img style="width: 20%; margin:10px 40%" src="../../assets/avater.jpeg" />
+      <!-- el-icon-right -->
 
-				<el-form ref="loginForm" :model="form" :rules="rules">
-					<img style="width: 20%; margin:10px 40%" src="../../assets/avater.jpeg" />
+      <el-button style="margin-top:3vh; margin-left: 46%" @click="show = !show" v-if="!show" type="primary" icon="el-icon-right" circle></el-button>
+      <transition name="el-zoom-in-center">
+        <el-form ref="loginForm" :model="form" :rules="rules" v-if="show">
+          
+          <el-form-item prop="username">
+            <span slot="label">{{id}}</span>
+            <el-input type="text" class='field' placeholder="请输入账号" v-model="form.username" />
+          </el-form-item>
 
-					<el-form-item prop="username">
-						<span slot="label">{{id}}</span>
-						<el-input type="text" class='field' placeholder="请输入账号" v-model="form.username" />
-					</el-form-item>
+          <el-form-item prop="password">
+            <span slot="label">{{key}}</span>
+            <el-input type="password" class='field' placeholder="请输入密码" v-model="form.password" />
+          </el-form-item>
 
-					<el-form-item prop="password">
-						<span slot="label">{{key}}</span>
-						<el-input type="password" class='field' placeholder="请输入密码" v-model="form.password" />
-					</el-form-item>
+          <el-form-item label="用户类型" prop="userType" style="text-align: center">
+            <el-radio-group v-model="form.userType" @change="changeLabel">
+              <el-radio label="Traveler" />
+              <el-radio label="Administrator" />
+            </el-radio-group>
+          </el-form-item>
 
-					<el-form-item label="用户类型" prop="userType" style="text-align: center">
-						<el-radio-group v-model="form.userType" @change="changeLabel">
-							<el-radio label="Traveler" />
-							<el-radio label="Administrator" />
-						</el-radio-group>
-					</el-form-item>
-
-					<el-button style="margin:0 20%; width: 60%;" type="primary" @click="onSubmit">登录</el-button>
-					<!-- <el-button style="margin:5% 20%; width: 60%;" type="primary" @click="onSubmit('signUpForm')">注册</el-button> -->
-				</el-form>
-			</el-card>
-		</transition>
+          <el-button style="margin:0 20%; width: 60%;" type="primary" @click="onSubmit">登录</el-button>
+          <!-- <el-button style="margin:5% 20%; width: 60%;" type="primary" @click="onSubmit('signUpForm')">注册</el-button> -->
+        </el-form>
+      </transition>
+      <el-steps style="margin-top: 3vh" :active="active" :space="200" finish-status="success" align-center>
+        <el-step title="进入网站首页"></el-step>
+        <el-step title="进行身份认证"></el-step>
+        <el-step title="进行您的设定"></el-step>
+      </el-steps>
+    </el-card>
+		
 		<div>{{counter}}</div>
 	</el-container>
 	<!-- </div> -->
@@ -45,7 +53,8 @@
 		name: 'Login',
 		data() {
 			return {
-				validity: true,
+        validity: true,
+        active: 1,
 				id: '房间',
 				key: '身份证',
 				message: '',

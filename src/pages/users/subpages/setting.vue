@@ -42,7 +42,8 @@
 				time0: 0,
 				time1: 0,
 				view: true,
-				timer: ''
+				timer: '',
+				timer2: ''
 			}
 		},
 		mounted() {
@@ -71,6 +72,7 @@
 					this.SetTemp.min = 25
 					this.SetTemp.max = 30
 				}
+				this.timer2 = setInterval(this.getDefaultTemp, 4000);
 			},
 			changeInfo(currentValue, oldValue) {
 				this.getDefaultTemp()
@@ -91,7 +93,7 @@
 				} else {
 					if (this.CentTemp < parseFloat(this.SlaveBasic.Temperature) || this.CentTemp > this.MasterSettings.SetTemperature) {
 						this.CentTemp = oldValue
-						if (this.CentTemp < parseFloat(this.SlaveBasic.Temperature)) {
+						if (parseFloat(this.CentTemp) < parseFloat(this.SlaveBasic.Temperature)) {
 							alert('温度设置失败：设定温度低于室温')
 						} else {
 							alert('温度设置失败：设定温度高于主机温度')
@@ -164,12 +166,24 @@
 					} else {
 						mode = '制热'
 					}
+					console.log(mode)
+					console.log(this.SlaveBasic.State)
+					if (mode !== this.SlaveBasic.State) {
+						console.log('sdfsadfa')
+						this.CentTemp = res.data.data.t
+						console.log(this.CentTemp)
+						this.reload()
+					}
 					this.$store.commit('UpdateMasterState', {
 						Temp: res.data.data.t,
 						Mode: mode
 					})
 				}
 			}
+		},
+		beforeDestroy() {
+			clearInterval(this.timer2);
+			this.timer2 = null;
 		}
 	}
 </script>

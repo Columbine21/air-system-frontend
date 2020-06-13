@@ -185,7 +185,7 @@
 							this.$store.commit('UpdateASstate', '送风')
 						}
 					} else {
-						alert(res.data.msg)
+						this.showMsg(res.data.msg)
 						if (res.data.code === 400) {
 							this.$store.commit('UpdateSlaveError', 1)
 						}
