@@ -78,8 +78,8 @@
 						}
 					})
 					.then(res => {
-						console.log('get Wind请求：')
-						console.log(res.data)
+						// console.log('get Wind请求：')
+						// console.log(res.data)
 						if (res.data.code === 200) {
 							this.$store.commit('UpdateASstate', '送风')
 						} else {
@@ -90,7 +90,7 @@
 							}
 							if (res.data.msg !== '未送风') {
 								if (this.msg !== res.data.msg) {
-									alert(res.data.msg)
+									this.$message(res.data.msg)
 									this.msg = res.data.msg
 								}
 							}
@@ -139,8 +139,8 @@
 						'Authorization': this.Customer.token
 					}
 				}).then(res => {
-					console.log('发送temp：')
-					console.log(res.data)
+					// console.log('发送temp：')
+					// console.log(res.data)
 					this.retry = 0
 					if (res.data.code === 400) {
 						this.alertTokenOverdue()
@@ -175,9 +175,10 @@
 						'Authorization': this.Customer.token
 					}
 				}).then(res => {
-					console.log('送风请求')
-					console.log(res.data)
+					// console.log('送风请求')
+					// console.log(res.data)
 					if (res.data.code === 200) {
+						this.$message('发送送风请求！')
 						this.code = 1
 						if (res.data.data === '正在排队') {
 							this.$store.commit('UpdateASstate', '等待送风')
@@ -206,9 +207,10 @@
 						'Authorization': this.Customer.token
 					}
 				}).then(res => {
-					console.log('停风请求：')
-					console.log(res.data)
+					// console.log('停风请求：')
+					// console.log(res.data)
 					if (res.data.code === 200) {
+						this.$message('发送关闭送风请求！')
 						this.code = 0
 						this.$store.commit('UpdateASstate', '待机')
 					} else {

@@ -1,6 +1,5 @@
 <template>
 	<div>
-		<el-divider direction="vertical"></el-divider>
 		<el-card style="margin:7vh 10%; width: 50%; height: 80%;">
 			<div slot="header">
 				<span>房间 {{SlaveBasic.RoomNo}} 显示面板</span>
@@ -18,7 +17,7 @@
 							<span>运行时间&ensp; :&ensp;{{SlaveBasic.UseTime}} 秒</span>
 						</div>
 						<div style="margin-top: 5vh">
-							<span>总花费&ensp; :&ensp;{{SlaveBasic.TotalMoney}} 元</span>
+							<span>总花费&ensp; :&ensp;{{info.money}} 元</span>
 						</div>
 						<div style="margin-top: 5vh">
 							<span>刷新频率&ensp; :&ensp;{{MasterSettings.SetFrequence}} </span>
@@ -31,13 +30,13 @@
 							<span>当前温度&ensp; :&ensp;{{SlaveBasic.Temperature}}°C</span>
 						</div>
 						<div style="margin-top: 5vh">
-							<span>设定温度&ensp; :&ensp;{{SlaveSettings.SetTemperature}}</span>
+							<span>设定温度&ensp; :&ensp;{{SlaveSettings.SetTemperature}}°C</span>
 						</div>
 						<div style="margin-top: 5vh">
 							<span>风速&ensp; :&ensp;{{marksWind[SlaveSettings.SetWind]}}</span>
 						</div>
 						<div style="margin-top: 5vh">
-							<span>消耗能量&ensp; :&ensp;{{SlaveBasic.TotalEnergy}} </span>
+							<span>消耗能量&ensp; :&ensp;{{info.energy}} </span>
 						</div>
 						<div style="margin-top: 1vh">
 							<span>&ensp; &ensp;</span>
@@ -56,9 +55,19 @@
 			return {
 				marksWind: {
 					0: 'LOW',
-					50: 'MEDIUM',
+					50: 'MID',
 					100: 'HIGH'
+				},
+				info: {
+					money: 0,
+					energy: 0
 				}
+			}
+		},
+		methods: {
+			change() {
+				this.info.money = this.SlaveBasic.TotalMoney
+				this.info.energy = this.SlaveBasic.TotalEnergy
 			}
 		},
 		computed: {

@@ -88,6 +88,7 @@ export default {
           confirmButtonText: '确定'
           })
         this.handleLogout()
+				this.$router.push('login')
       }
     },
     refreshStatusData (res) {
@@ -100,6 +101,7 @@ export default {
           confirmButtonText: '确定'
           })
         this.handleLogout()
+				this.$router.push('login')
       }
     },
     exportExcel (tableName) {
@@ -155,7 +157,7 @@ export default {
     }
   },
   mounted () {
-    this.Timer.timer0 = setInterval(this.Refresh, 3000)
+    this.Timer.timer0 = setInterval(this.Refresh, 2000)
     axios.get(
       '/master/slaves',
       { headers: {

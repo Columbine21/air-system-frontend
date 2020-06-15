@@ -30,7 +30,7 @@
 			return {
 				marksWind: {
 					0: 'LOW',
-					50: 'MEDIUM',
+					50: 'MID',
 					100: 'HIGH'
 				},
 				SetTemp: {
@@ -79,9 +79,9 @@
 				if (this.SlaveBasic.State === '制冷') {
 					if (this.CentTemp > parseFloat(this.SlaveBasic.Temperature) || this.CentTemp < this.MasterSettings.SetTemperature) {
 						if (parseFloat(this.CentTemp) > parseFloat(this.SlaveBasic.Temperature)) {
-							alert('温度设置失败：设定温度高于室温')
+							this.$message('温度设置失败：设定温度高于室温')
 						} else {
-							alert('温度设置失败：设定温度低于主机温度')
+							this.$message('温度设置失败：设定温度低于主机温度')
 						}
 						this.CentTemp = oldValue
 						console.log('nowTemp:' + this.SlaveBasic.Temperature)
@@ -94,9 +94,9 @@
 					if (this.CentTemp < parseFloat(this.SlaveBasic.Temperature) || this.CentTemp > this.MasterSettings.SetTemperature) {
 						this.CentTemp = oldValue
 						if (parseFloat(this.CentTemp) < parseFloat(this.SlaveBasic.Temperature)) {
-							alert('温度设置失败：设定温度低于室温')
+							this.$message('温度设置失败：设定温度低于室温')
 						} else {
-							alert('温度设置失败：设定温度高于主机温度')
+							this.$message('温度设置失败：设定温度高于主机温度')
 						}
 						console.log('nowTemp:' + this.SlaveBasic.Temperature)
 						console.log('setTemp:' + currentValue)
@@ -109,22 +109,12 @@
 					Temp: this.CentTemp,
 					Wind: this.CentWind
 				})
-				if (this.time0 === 0) {
-					this.time0 = new Date().getMilliseconds()
-					this.timer = setTimeout(this.sendSettings, 1000)
-				} else {
-					this.time1 = new Date().getMilliseconds()
-					if (this.time1 - this.time0 < 1000) {
-						this.sendSettings()
-						clearTimeout(this.timer)
-					}
-					this.time0 = 0
-					this.time1 = 0
-				}
+				clearTimeout(this.timer)
+				this.timer = setTimeout(this.sendSettings, 1000)
 			},
 			sendSettings() {
+				this.$message('设置请求： 温度： ' + this.CentTemp + '°C   风速： ' + this.marksWind[this.CentWind])
 				this.time0 = 0
-				this.time1 = 0
 				axios({
 					method: 'post',
 					url: '/slave/set', // 发送设置参数
@@ -138,6 +128,10 @@
 				}).then(res => {
 					console.log('设置参数发送：')
 					console.log(res)
+					if (res.data.code === 200) {
+						console.log('temp: ' + this.CentTemp + this.CentWind)
+						this.$message('设置成功')
+					}
 				})
 			},
 			reload() {
@@ -154,24 +148,20 @@
 				}).then(this.getDefaultTempRes)
 			},
 			getDefaultTempRes(res) {
-				console.log('获取主机温度请求：')
+				// console.log('获取主机温度请求：')
 				if (res.data.code !== 200) {
 					console.log('请求主机设定温度失败')
-					alert('请求主机设定温度失败')
+					this.$message('请求主机设定温度失败')
 				} else {
-					console.log(res.data)
+					// console.log(res.data)
 					var mode = ''
 					if (res.data.data.mode === 'COOL') {
 						mode = '制冷'
 					} else {
 						mode = '制热'
 					}
-					console.log(mode)
-					console.log(this.SlaveBasic.State)
 					if (mode !== this.SlaveBasic.State) {
-						console.log('sdfsadfa')
 						this.CentTemp = res.data.data.t
-						console.log(this.CentTemp)
 						this.reload()
 					}
 					this.$store.commit('UpdateMasterState', {
@@ -184,6 +174,7 @@
 		beforeDestroy() {
 			clearInterval(this.timer2);
 			this.timer2 = null;
+			clearTimeout(this.timer)
 		}
 	}
 </script>

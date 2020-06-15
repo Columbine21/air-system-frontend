@@ -39,7 +39,7 @@
 			<el-main>
 				<sensor ref="sensor"></sensor>
 				<div v-show="show_info">
-					<display-panal></display-panal>
+					<display-panal ref="panal"></display-panal>
 				</div>
 
 				<div v-show="show_setting">
@@ -90,16 +90,18 @@
 				},
 				Timer: {
 					timer0: '',
-					timer1: ''
+					timer1: '',
+					timer2: ''
 				},
 				retry: 0
 			}
 		},
 		mounted() {
 			// timer0 更新timelist templist moneylist
-			this.Timer.timer0 = setInterval(this.getlist, 10000);
+			this.Timer.timer0 = setInterval(this.getlist, 5000);
 			// timer1 刷新Error代码
 			this.Timer.timer1 = setInterval(this.handleError, 1000);
+			this.Timer.timer2 = setInterval(this.getMoney2, 2000);
 			this.init()
 		},
 		methods: {
@@ -123,8 +125,6 @@
 						console.log('init请求：')
 						console.log(res.data)
 						this.$store.commit('SetSlaveState', res.data.data)
-						if (this.SlaveBasic.ASstate === '关机') this.machine = false
-						else this.machine = true
 						this.$refs.set.init()
 					})
 					.catch(function(err) {
@@ -135,7 +135,7 @@
 			 *  showChange() 切换页面
 			 */
 			showChange(type, p) {
-				console.log(type + '...' + p)
+				// console.log(type + '...' + p)
 				if (type === 'info') {
 					this.show_info = true
 					this.show_money = false
@@ -162,13 +162,12 @@
 			 *  getlist() + getMoney() 每10s更新一下templist和moneylist
 			 */
 			getlist() {
-				this.$store.commit('UpdateSlaveTime', 10)
+				this.$store.commit('UpdateSlaveTime', 5)
 				this.RoomInfo.timelist.push(this.SlaveBasic.UseTime)
 				this.RoomInfo.templist.push(this.SlaveBasic.Temperature)
 				this.getMoney()
 			},
 			getMoney() {
-				this.initInfo()
 				if (this.SlaveBasic.ASstate === '关机') {
 					return
 				}
@@ -180,11 +179,7 @@
 					.then(res => {
 						console.log('计费请求：')
 						console.log(res.data)
-						console.log(parseFloat(res.data.data.cost))
-						console.log(parseFloat(this.SlaveBasic.TotalMoney))
 						if (parseFloat(res.data.data.cost) >= parseFloat(this.SlaveBasic.TotalMoney)) {
-							console.log(res.data)
-							this.$store.commit('UpdateSlaveTotalMoney', res.data.data.cost.toFixed(2))
 							this.RoomInfo.moneylist.push(this.SlaveBasic.TotalMoney)
 						} else {
 							this.RoomInfo.moneylist.push(this.SlaveBasic.TotalMoney)
@@ -193,6 +188,27 @@
 					.catch(function(err) {
 						console.log('failed', err);
 					});
+			},
+			getMoney2() {
+				if (this.SlaveBasic.ASstate === '关机') {
+					return
+				}
+				axios.get('/slave/bill', {
+						headers: {
+							'Authorization': this.Customer.token
+						}
+					})
+					.then(res => {
+						console.log('计费请求：')
+						console.log(res.data)
+						if (parseFloat(res.data.data.cost) >= parseFloat(this.SlaveBasic.TotalMoney)) {
+							this.$store.commit('UpdateSlaveTotal', {
+								cost: parseFloat(res.data.data.cost).toFixed(2),
+								P: parseFloat(res.data.data.p).toFixed(2)
+							})
+							this.$refs.panal.change()
+						} 
+					})
 			},
 			/*
 			 *  sendOnOff 开关状态变化时被调用
@@ -216,8 +232,8 @@
 						'Authorization': this.Customer.token
 					}
 				}).then(res => {
-					console.log('关闭请求：')
-					console.log(res.data)
+					// console.log('关闭请求：')
+					// console.log(res.data)
 					if (res.data.code === 200) {
 						this.$refs.sensor.code = 0
 						this.$store.commit('UpdateASstate', '关机')
@@ -234,8 +250,8 @@
 						'Authorization': this.Customer.token
 					}
 				}).then(res => {
-					console.log('开机请求：')
-					console.log(res.data)
+					// console.log('开机请求：')
+					// console.log(res.data)
 					if (res.data.code === 200) {
 						this.$store.commit('UpdateASstate', '待机')
 					} else {
@@ -277,6 +293,9 @@
 			this.Timer.timer0 = null;
 			clearInterval(this.Timer.timer1);
 			this.Timer.timer1 = null;
+			clearInterval(this.Timer.timer2);
+			this.Timer.timer2 = null;
+			this.sendOffReq()
 		}
 	}
 </script>

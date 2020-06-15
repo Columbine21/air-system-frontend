@@ -13,7 +13,7 @@ const defaultTemperature = 22
 const defaultFrequence = 10000
 const defaultToken = ''
 const defaultRoomNo = '101'
-const defaultASstate = '关机'
+const defaultASstate = '待机'
 const defaultWind = 0
 const defaultTotalMoney = 0
 const defaultUseTime = 0
@@ -84,7 +84,7 @@ export default new Vuex.Store({
 			case 'LOW':
 				wind = 0
 				break;
-			case 'MEDIUM':
+			case 'MID':
 				wind = 50
 				break;
 			case 'HIGH':
@@ -94,21 +94,6 @@ export default new Vuex.Store({
 				break;
 		}
 		state.SlaveState.Settings.SetWind = wind
-		var state0 = '关机'
-		switch (SlaveInfo.slave.state) {
-			case 'CLOSE':
-				state0 = '关机'
-				break;
-			case 'RUNNING':
-				state0 = '送风'
-				break;
-			case 'WAITING':
-				state0 = '待机'
-				break;
-			default:
-				break;
-		}
-		state.SlaveState.Basic.ASstate = state0
 		state.SlaveState.Settings.SetTemperature = SlaveInfo.slave.targetT
 		state.SlaveState.Basic.Temperature = SlaveInfo.temperature
 		state.SlaveState.Basic.TotalMoney = SlaveInfo.slave.prevPrice
@@ -128,7 +113,6 @@ export default new Vuex.Store({
 	  state.MasterState.Settings.SetTemperature = SettingInfo.Temp
 	  state.MasterState.Basic.Mode = SettingInfo.Mode
 	  state.SlaveState.Basic.State = SettingInfo.Mode
-	  console.log('1 ' + state.SlaveState.Basic.State)
 	},
 	UpdateSlaveTime(state, time) {
 	  state.SlaveState.Basic.UseTime = time + state.SlaveState.Basic.UseTime
@@ -137,8 +121,10 @@ export default new Vuex.Store({
 	  if (temp <= MAXTemp) state.SlaveState.Basic.Temperature = temp
 	  else state.SlaveState.Basic.Temperature = MAXTemp
 	},
-	UpdateSlaveTotalMoney(state, money) {
-	  state.SlaveState.Basic.TotalMoney = money
+	UpdateSlaveTotal(state, info) {
+		console.log('infsds: ' + info.cost)
+	  state.SlaveState.Basic.TotalMoney = info.cost
+	  state.SlaveState.Basic.TotalEnergy = info.P
 	},
 	UpdateSlaveError(state, error) {
 	  state.SlaveState.Error = error

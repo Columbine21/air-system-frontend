@@ -196,10 +196,18 @@ export default {
       }
     },
     getSwitchRes (res) {
+      // console.log("1111111111111")
       console.log(res.data.data)
+      let statuson = res.data.data.state === "CLOSE" ? false : true
+      this.$store.commit('SetMasterState', {
+          'Poweron': statuson,
+          'Mode': this.MasterState.Basic.Mode, 
+          'WorkStatus': this.MasterState.Basic.WorkStatus,
+          'SetTemperature': this.MasterState.Settings.SetTemperature,
+          'SetFrequence': this.MasterState.Settings.SetFrequence
+        })
       if(res.data.code === 200) {
         if (this.MasterState.Basic.Poweron === true) {
-          
           this.$alert('开启中央空调成功', {
           confirmButtonText: '确定'
           })
